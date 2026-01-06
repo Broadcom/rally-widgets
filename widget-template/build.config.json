@@ -1,0 +1,9 @@
+{
+  "input": {
+    "html": "widget.html",
+    "css": [
+        "widget.css"
+    ],
+    "js_entry": "widget.js"
+  }
+}

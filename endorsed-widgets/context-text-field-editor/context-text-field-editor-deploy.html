@@ -1,0 +1,1297 @@
+<!--
+  Build Version: N/A
+  Build Date: 2025-12-12T21:36:44.776Z
+  Checksum (md5): 0b203566ccd3f146bb1b203baa3ba64a
+-->
+​​<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- ... other head elements like meta, title, css link ... -->
+    <style>
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        /* Only apply positioning context when wrapper or editor contains an error box */
+        #wrapper:has(.chr-WidgetInfoBox),
+        #editor:has(.chr-WidgetInfoBox) {
+            position: relative;
+            min-height: 400px;
+        }
+        
+        /* For normal content display, allow editor to grow */
+        #editor {
+            flex-grow: 1;
+        }
+
+
+        /* A container to align multiple dropdowns in a row */
+        /* This class name now matches the one used in ui-utilities.js */
+        .rally-like-controls-container {
+            width: 100%; /* Let the container be full-width */
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start; 
+            align-items: center;
+            gap: 8px; /* Provides spacing between the dropdowns */
+            margin-bottom: 8px; /* Provides spacing below the row of selectors */
+        } 
+
+        .rally-like-controls-container-vertical  {
+            width: 100%; /* Let the container be full-width */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: flex-start;
+            gap: 8px; /* Provides spacing between the dropdowns */
+            margin-bottom: 8px; /* Provides spacing below the row of selectors */
+        } 
+
+        .rally-main-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            position: relative; /* Establish a stacking context for the chart */
+            z-index: 1;         /* Ensure it's on a low layer */
+        }
+
+        /* Main container for the label and dropdown for proper alignment */
+        .rally-like-field-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 8px;
+            /* A fixed width can be restrictive. Using flex-grow is more responsive. */
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            max-width: 400px;
+        }
+
+        /* Style for the label next to the dropdown */
+        .rally-like-label {
+            font-size: 12px;
+            color: #58606e;
+            margin-right: 8px;
+            white-space: nowrap;
+            font-weight: 400;
+            min-width: 150px;
+            text-align: right;
+        }
+
+        /* Wrapper for the select element to help style the dropdown arrow */
+        .rally-like-select-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        /* The core style for the <select> element */
+        .rally-like-select {
+            /* Reset default browser appearance */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            /* Sizing and Box Model */
+            width: 100%;
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            height: 32px;
+            padding: 6px 25px 6px 8px; /* Right padding to avoid text overlapping the arrow */
+            border: 1px solid #b2b2b2;
+            border-radius: 0;
+
+            /* Colors and Font */
+            background-color: transparent;
+            color: #434A54;
+            font-size: 12px;
+            font-weight: 400;
+            
+            /* Other */
+            cursor: pointer;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        /* Change border color on focus, similar to Rally */
+        .rally-like-select:focus {
+            outline: none;
+            border-color: #77b9e4;
+        }
+
+        /* Custom dropdown arrow using an SVG background image */
+        .rally-like-select-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            width: 16px;
+            height: 16px;
+            transform: translateY(-50%);
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M8.01535196,11.3038244 L8.01524617,11.303722 L7.98464804,11.3333333 L3.24538346,6.7469161 C2.91820551,6.43029006 2.91820551,5.91693783 3.24538346,5.60031179 C3.5725614,5.28368575 4.10302166,5.28368575 4.4301996,5.60031179 L7.98475383,9.04022709 L11.5698004,5.57080286 C11.8969783,5.25417682 12.4274386,5.25417682 12.7546165,5.57080286 C13.0817945,5.8874289 13.0817945,6.40078113 12.7546165,6.71740717 L8.01535196,11.3038244 Z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none; /* Allows clicks to pass through to the select element */
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-close-button {
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .modal-close-button:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            overflow-y: auto; /* Make the body scrollable if content is too tall */
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .modal-table th, .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .modal-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        /* --- Rally-like Button Styles --- */
+        .rally-button {
+            border-radius: 3px;
+            border-style: solid;
+            border-width: 1px;
+            cursor: pointer;
+            display: inline-flex; /* Use flex for alignment */
+            align-items: center;
+            gap: 6px; /* Space between icon and text */
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-weight: 500;
+            text-align: center;
+            vertical-align: middle;
+            white-space: nowrap;
+            transition: all 0.2s ease-in-out;
+        }
+
+        #save-button,
+        #edit-mode-toggle {
+            width: 75px;
+            justify-content: center; /* Center content within the fixed width */
+        }
+
+
+        .rally-button .btn-icon {
+            display: inline-block;
+            line-height: 1; /* Helps align icons vertically */
+        }
+
+        .rally-button .btn-icon svg {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+            stroke-width: 2.5; /* Make icon lines a bit thicker */
+        }
+
+        .rally-button-small {
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        .rally-button-primary {
+            background-color: #3272d9;
+            border-color: #3272d9;
+            color: #fff;
+        }
+
+        .rally-button-primary:not(:disabled):hover {
+            background-color: #2a62bc; /* Darker blue for hover */
+            border-color: #2a62bc;
+        }
+
+        .rally-button-primary:hover {
+            background-color: #2977ff;
+        }
+        .rally-button:disabled {
+            background-color: #e0e0e0;
+            border-color: #ccc;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .rally-button-secondary {
+            background-color: #fff;
+            border-color: #3272d9;
+            color: #3272d9;
+        }
+
+        .rally-button-secondary:not(:disabled):hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Style for the button when it's in the 'toggled on' state (i.e., editor is active) */
+        .rally-button.toggled-on {
+            background-color: #eaf1fb; /* Light blue background when active */
+            border-color: #a9c7f3;
+        }
+
+        #save-button {
+            /* Add transition for smooth appearance */
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .rally-button.toggled-on:hover{
+            background-color: #f0f0f0;
+        }
+
+        /* --- CKEditor Content Styles --- */
+        /* These styles ensure that the rich text content looks consistent
+           both inside and outside of the active editor. The .ck-content class
+           is added to the #editor div when the editor is not active. */
+        #editor.ck-content {
+            flex-grow: 1; /* Allow the inactive editor to fill space */
+            overflow-y: auto; /* Add scrollbar if content overflows */
+            padding: 10px;
+            line-height: 1.6;
+            color: #333;
+            /* border: 1px solid #ccc; */
+            border-radius: 3px;
+        }
+
+        /* --- CKEditor Sizing --- */
+        /* These styles make the active editor instance fill the available space */
+        .ck.ck-editor {
+            flex-grow: 1; /* Make the entire editor widget grow */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Hide overflow on the main editor container */
+        }
+
+        .ck-editor__main {
+            /* This is the container for the editable area */
+            flex-grow: 1;
+            overflow-y: auto; /* Allow the content itself to scroll */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ck-content h1,
+        .ck-content h2,
+        .ck-content h3 {
+            font-weight: bold;
+            margin-top: 1.2em;
+            margin-bottom: 0.6em;
+        }
+
+        .ck-content h1 { font-size: 2em; }
+        .ck-content h2 { font-size: 1.5em; }
+        .ck-content h3 { font-size: 1.17em; }
+
+        .ck-content p {
+            margin-bottom: 1em;
+        }
+
+        .ck-content ul,
+        .ck-content ol {
+            margin-left: 2em;
+            margin-bottom: 1em;
+        }
+
+        .ck-content blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 1em;
+            margin-left: 0;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* --- Toggle Switch Styles --- */
+        .toggle-switch-container {
+            display: flex;
+            align-items: center;
+            gap: 0px;
+            margin-bottom: 8px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #3272d9; /* Rally primary blue */
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* --- Widget Info Box Styles --- */
+        .chr-WidgetInfoBox {
+            align-items: center;
+            border: 1px solid #fff;
+            border-radius: 3px;
+            display: flex;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 18px;
+            margin: auto;
+            padding: 1.6rem;
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .chr-WidgetInfoBox.chr-WidgetInfoBox--large {
+            max-width: 30rem;
+        }
+
+        .chr-WidgetInfoBox.chr-WidgetInfoBox--info {
+            background-color: #f0f5fc;
+            border-color: #1d5bbf;
+            color: #000;
+            width: fit-content;
+        }
+
+        .chr-WidgetInfoBox.chr-WidgetInfoBox--warning {
+            background-color: #fff8e1;
+            border-color: #f57c00;
+            color: #000;
+            width: fit-content;
+        }
+
+        .chr-WidgetInfoBox.chr-WidgetInfoBox--error {
+            background-color: #ffebee;
+            border-color: #c62828;
+            color: #000;
+            width: fit-content;
+        }
+
+   /* Use a common font stack that resembles Rally's ProximaNova */
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        /* A container to align multiple dropdowns in a row */
+        /* This class name now matches the one used in ui-utilities.js */
+        .rally-like-controls-container {
+            width: 100%; /* Let the container be full-width */
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start; 
+            align-items: center;
+            gap: 8px; /* Provides spacing between the dropdowns */
+            margin-bottom: 8px; /* Provides spacing below the row of selectors */
+        } 
+
+        .rally-main-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            position: relative; /* Establish a stacking context for the chart */
+            z-index: 1;         /* Ensure it's on a low layer */
+        }
+
+        /* Main container for the label and dropdown for proper alignment */
+        .rally-like-field-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 8px;
+            /* A fixed width can be restrictive. Using flex-grow is more responsive. */
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            max-width: 400px;
+        }
+
+        /* Style for the label next to the dropdown */
+        .rally-like-label {
+            font-size: 12px;
+            color: #58606e;
+            margin-right: 4px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        /* Wrapper for the select element to help style the dropdown arrow */
+        .rally-like-select-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        /* The core style for the <select> element */
+        .rally-like-select {
+            /* Reset default browser appearance */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            /* Sizing and Box Model */
+            width: 100%;
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            height: 32px;
+            padding: 6px 25px 6px 8px; /* Right padding to avoid text overlapping the arrow */
+            border: 1px solid #b2b2b2;
+            border-radius: 0;
+
+            /* Colors and Font */
+            background-color: transparent;
+            color: #434A54;
+            font-size: 12px;
+            font-weight: 400;
+            
+            /* Other */
+            cursor: pointer;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        /* Change border color on focus, similar to Rally */
+        .rally-like-select:focus {
+            outline: none;
+            border-color: #77b9e4;
+        }
+
+        /* Custom dropdown arrow using an SVG background image */
+        .rally-like-select-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            width: 16px;
+            height: 16px;
+            transform: translateY(-50%);
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M8.01535196,11.3038244 L8.01524617,11.303722 L7.98464804,11.3333333 L3.24538346,6.7469161 C2.91820551,6.43029006 2.91820551,5.91693783 3.24538346,5.60031179 C3.5725614,5.28368575 4.10302166,5.28368575 4.4301996,5.60031179 L7.98475383,9.04022709 L11.5698004,5.57080286 C11.8969783,5.25417682 12.4274386,5.25417682 12.7546165,5.57080286 C13.0817945,5.8874289 13.0817945,6.40078113 12.7546165,6.71740717 L8.01535196,11.3038244 Z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none; /* Allows clicks to pass through to the select element */
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-close-button {
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .modal-close-button:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            overflow-y: auto; /* Make the body scrollable if content is too tall */
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .modal-table th, .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .modal-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+
+        /* --- Multi-Select Dropdown Styles --- */
+.multi-select-wrapper {
+    position: relative;
+    flex-grow: 1;
+}
+
+.multi-select-display {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px; /* Match rally-like-select height */
+    height: auto; /* Allow it to grow */
+    padding: 3px 8px; /* Adjust padding for tags */
+}
+
+.multi-select-placeholder {
+    color: #888;
+}
+
+.multi-select-tag {
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.multi-select-tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+}
+.multi-select-tag-remove:hover {
+    color: #333;
+}
+
+.multi-select-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #b2b2b2;
+    z-index: 1001;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.multi-select-dropdown.show {
+    display: block;
+}
+
+.multi-select-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.multi-select-dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.multi-select-dropdown li:hover {
+    background-color: #f0f0f0;
+}
+
+.multi-select-dropdown input[type="checkbox"] {
+    cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+        <div id="wrapper"></div>
+        <div id="editor"></div>
+        <!-- ... your other script tags ... -->
+
+        <script>
+        // $RallyContext:Begin
+        // $RallyContext:End
+        </script>
+        <script>
+(() => {
+  // utilities/utility.js
+  async function fetchWsapiObject(ref, fetchFields = ["FormattedID", "Name"]) {
+    if (!ref) {
+      throw new Error("A valid _ref is required to fetch a WSAPI object.");
+    }
+    const type = getWsapiTypeFromRef(ref);
+    if (!type) {
+      throw new Error(`Could not determine object type from ref: ${ref}`);
+    }
+    const objectID = getObjectIDFromRef(ref);
+    if (!objectID) {
+      throw new Error(`Could not determine object ID from ref: ${ref}`);
+    }
+    const url = `${$RallyContext.Url.origin}/slm/webservice/v2.0/${type}/${objectID}?fetch=${fetchFields.join(",")}`;
+    const response = await fetch(url);
+    const result = await response.json();
+    const objectKey = Object.keys(result)[0];
+    if (result[objectKey].Errors && result[objectKey].Errors.length > 0) {
+      throw new Error(`Error fetching object: ${result[objectKey].Errors.join(", ")}`);
+    }
+    return result[objectKey];
+  }
+  async function updateWsapiObject(ref, fieldsToUpdate, securityToken) {
+    const type = getWsapiTypeFromRef(ref);
+    if (!type) {
+      throw new Error(`Could not determine object type from ref: ${ref}`);
+    }
+    const objectID = getObjectIDFromRef(ref);
+    if (!objectID) {
+      throw new Error(`Could not determine object ID from ref: ${ref}`);
+    }
+    const body = { [type]: fieldsToUpdate };
+    const url = `/slm/webservice/v2.0/${type}/${objectID}?key=${securityToken}`;
+    const response = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const result = await response.json();
+    if (result.OperationResult.Errors && result.OperationResult.Errors.length > 0) {
+      throw new Error(`Error updating object: ${result.OperationResult.Errors.join(", ")}`);
+    }
+    console.log("Update successful:", result.OperationResult.Object);
+    return result.OperationResult.Object;
+  }
+  var getWsapiTypeFromRef = (ref) => {
+    const relativeRef = getRelativeRef(ref);
+    if (!relativeRef) {
+      return null;
+    }
+    const parts = relativeRef.split("/");
+    if (parts.length > 1 && parts[1]) {
+      return parts[1];
+    }
+    return null;
+  };
+  function getRelativeRef(ref) {
+    if (!ref || typeof ref !== "string") {
+      return null;
+    }
+    const apiPrefix = "/slm/webservice/v2.0";
+    let pathname;
+    if (ref.toLowerCase().startsWith("http")) {
+      try {
+        pathname = new URL(ref).pathname;
+      } catch (e) {
+        console.error("Could not parse full _ref URL:", ref, e);
+        return null;
+      }
+    } else {
+      pathname = ref.split("?")[0];
+    }
+    return pathname.startsWith(apiPrefix) ? pathname.substring(apiPrefix.length) : pathname;
+  }
+  function getObjectIDFromRef(ref) {
+    if (!ref || typeof ref !== "string") {
+      return null;
+    }
+    const parts = ref.split("/");
+    const lastPart = parts[parts.length - 1];
+    const objectID = lastPart.split("?")[0];
+    return /^\d+$/.test(objectID) ? objectID : null;
+  }
+
+  // utilities/ui-utilities.js
+  function createStyledDropdown(config) {
+    const renderTarget = document.getElementById(config.renderTo);
+    if (!renderTarget) {
+      console.error(`Render target with ID "${config.renderTo}" not found.`);
+      return;
+    }
+    if (config.id) {
+      const existingElement = document.getElementById(config.id);
+      if (existingElement) {
+        existingElement.remove();
+      }
+    }
+    const container = document.createElement("div");
+    container.className = "rally-like-field-container";
+    if (config.id) {
+      container.id = config.id;
+    }
+    const label = document.createElement("label");
+    label.className = "rally-like-label";
+    label.textContent = config.fieldLabel || "Select an Option:";
+    const selectWrapper = document.createElement("div");
+    selectWrapper.className = "rally-like-select-wrapper";
+    const select = document.createElement("select");
+    select.className = "rally-like-select";
+    label.htmlFor = select.id = `styled-dropdown-${Date.now()}`;
+    const valueMap = /* @__PURE__ */ new Map();
+    config.data.forEach((item, index) => {
+      const option = document.createElement("option");
+      option.textContent = item.name;
+      const stringValue = JSON.stringify(item.value);
+      option.value = stringValue;
+      valueMap.set(stringValue, item);
+      select.appendChild(option);
+    });
+    select.addEventListener("change", (event) => {
+      const selectedStringValue = event.target.value;
+      const selectedItem = valueMap.get(selectedStringValue);
+      const selectedValueObject = JSON.parse(selectedStringValue);
+      if (config.onSelect && typeof config.onSelect === "function") {
+        config.onSelect({
+          name: selectedItem.name,
+          value: selectedValueObject
+        });
+      }
+    });
+    selectWrapper.appendChild(select);
+    container.appendChild(label);
+    container.appendChild(selectWrapper);
+    renderTarget.appendChild(container);
+    let initialValueToSet = null;
+    if (config.value !== void 0 && config.value !== null) {
+      const foundItem = config.data.find((item) => item.value === config.value);
+      if (foundItem) {
+        initialValueToSet = JSON.stringify(foundItem.value);
+      }
+    }
+    if (initialValueToSet === null && config.data.length > 0) {
+      initialValueToSet = JSON.stringify(config.data[0].value);
+    }
+    if (initialValueToSet !== null) {
+      select.value = initialValueToSet;
+      if (config.fireSelectOnLoad) {
+        select.dispatchEvent(new Event("change"));
+      }
+    }
+  }
+  function addHorizontalControlsContainer(containerId, parentContainerId) {
+    addContainerWithClass(containerId, parentContainerId, "rally-like-controls-container");
+  }
+  function addVerticalControlsContainer(containerId, parentContainerId) {
+    addContainerWithClass(containerId, parentContainerId, "rally-like-controls-container-vertical");
+  }
+  function addContainerWithClass(containerId, parentContainerId, className) {
+    const parentContainer = document.getElementById(parentContainerId);
+    if (!parentContainer) {
+      console.error(`Parent container with ID "${parentContainerId}" not found.`);
+      return;
+    }
+    let controlsContainer = document.getElementById(containerId);
+    if (!controlsContainer) {
+      controlsContainer = document.createElement("div");
+      controlsContainer.id = containerId;
+      controlsContainer.className = className;
+      parentContainer.append(controlsContainer);
+    }
+  }
+  function createToggleStyledButton({ renderTo, id, textOn, textOff, iconOn, iconOff, onToggle }) {
+    const renderTarget = document.getElementById(renderTo);
+    if (!renderTarget) {
+      console.error(`Render target with ID "${renderTo}" not found.`);
+      return;
+    }
+    const button = document.createElement("button");
+    if (id) {
+      button.id = id;
+    }
+    button.className = "rally-button rally-button-secondary rally-button-small";
+    button.dataset.toggled = "false";
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "btn-icon";
+    const textSpan = document.createElement("span");
+    textSpan.className = "btn-text";
+    button.appendChild(iconSpan);
+    button.appendChild(textSpan);
+    const updateButtonContent = (isToggledOn) => {
+      const icon = isToggledOn ? iconOn : iconOff;
+      const text = isToggledOn ? textOn : textOff;
+      if (icon) {
+        iconSpan.innerHTML = icon;
+        iconSpan.style.display = "inline-block";
+      } else {
+        iconSpan.innerHTML = "";
+        iconSpan.style.display = "none";
+      }
+      textSpan.textContent = text;
+    };
+    updateButtonContent(false);
+    button.addEventListener("click", () => {
+      const isToggledOn = button.dataset.toggled === "true";
+      const newState = !isToggledOn;
+      button.dataset.toggled = String(newState);
+      updateButtonContent(newState);
+      button.classList.toggle("toggled-on", newState);
+      onToggle?.(newState);
+    });
+    renderTarget.appendChild(button);
+  }
+  function createToggleSwitch({ renderTo, id, labelText, checked = false, onToggle }) {
+    const renderTarget = document.getElementById(renderTo);
+    if (!renderTarget) {
+      console.error(`Render target with ID "${renderTo}" not found.`);
+      return;
+    }
+    const container = document.createElement("div");
+    container.className = "toggle-switch-container";
+    if (labelText) {
+      const label = document.createElement("span");
+      label.className = "rally-like-label";
+      label.textContent = labelText;
+      container.appendChild(label);
+    }
+    const switchLabel = document.createElement("label");
+    switchLabel.className = "toggle-switch";
+    if (id) {
+      switchLabel.id = id;
+    }
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = checked;
+    const slider = document.createElement("span");
+    slider.className = "slider";
+    checkbox.addEventListener("change", (event) => onToggle?.(event.target.checked));
+    switchLabel.appendChild(checkbox);
+    switchLabel.appendChild(slider);
+    container.appendChild(switchLabel);
+    renderTarget.appendChild(container);
+  }
+
+  // context-text-field-editor/widget.js
+  var editorInstance = null;
+  var originalContent = "";
+  var defaultSettings = {
+    type: "Project",
+    // Can be "ViewFilter" or "Project" - defaults to Project as it's always available
+    field: "Description",
+    // This can be the default field to select
+    allowEdit: false
+  };
+  window.addEventListener("message", (event) => {
+    if (event.origin !== $RallyContext.Url.origin) return;
+    if (event.data.type === "RALLY_CONTEXT_LOADED") {
+      if ($RallyContext.isEditMode) {
+        let userSettings = cleanseSettings($RallyContext.Settings);
+        let mergedSettings = { ...defaultSettings, ...userSettings };
+        window.RallyContext.updateSettings(mergedSettings);
+      }
+      console.log("$RallyContext", $RallyContext);
+      buildWidget();
+    }
+  });
+  function cleanseSettings(settings) {
+    console.log("userSettings", settings);
+    let cleansedSettings = settings || {};
+    return cleansedSettings;
+  }
+  function buildWidget() {
+    const wrapper2 = document.getElementById("wrapper");
+    wrapper2.innerHTML = "";
+    try {
+      if ($RallyContext.isEditMode) {
+        addEditModeControls();
+      } else {
+        if ($RallyContext.Settings.allowEdit) {
+          addSaveEditButtons();
+        }
+        displayFieldContent();
+      }
+    } catch (error) {
+      console.error("Failed to build widget:", error);
+      if (wrapper2) {
+        wrapper2.innerHTML = `<div class="chr-WidgetInfoBox chr-WidgetInfoBox--error">Error building widget: ${error.message || error}</div>`;
+      }
+    }
+  }
+  function addSaveEditButtons() {
+    addHorizontalControlsContainer("buttons-container", "wrapper");
+    createToggleStyledButton({
+      renderTo: "buttons-container",
+      id: "edit-mode-toggle",
+      textOff: "Edit",
+      textOn: "View",
+      iconOff: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`,
+      iconOn: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+      onToggle: (isToggledOn) => {
+        if (isToggledOn) {
+          activateEditor();
+        } else {
+          if (document.getElementById("save-button").disabled === false) {
+            editorInstance?.setData(originalContent);
+          }
+          deactivateEditor();
+        }
+      }
+    });
+    const saveButton = document.createElement("button");
+    saveButton.id = "save-button";
+    saveButton.textContent = "Save";
+    saveButton.className = "rally-button rally-button-primary rally-button-small";
+    saveButton.style.display = "none";
+    saveButton.disabled = true;
+    saveButton.addEventListener("click", handleSave);
+    document.getElementById("buttons-container").append(saveButton);
+  }
+  async function handleSave() {
+    if (!editorInstance) return;
+    const saveButton = document.getElementById("save-button");
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving...";
+    const newContent = editorInstance.getData();
+    const fieldToUpdate = $RallyContext.Settings.field;
+    const objectType = $RallyContext.Settings.type || "ViewFilter";
+    let objectRef;
+    if (objectType === "Project") {
+      objectRef = $RallyContext.GlobalScope.Project?._ref;
+    } else {
+      objectRef = $RallyContext.ViewFilter?.Value?._ref;
+    }
+    if (!objectRef) {
+      console.error("No object reference found for saving");
+      saveButton.textContent = "Save";
+      saveButton.disabled = false;
+      return;
+    }
+    try {
+      const fieldsToUpdate = { [fieldToUpdate]: newContent };
+      const securityToken = window.parent.envConfig.securityToken;
+      await updateWsapiObject(objectRef, fieldsToUpdate, securityToken);
+      console.log("Save successful!");
+      originalContent = newContent;
+      saveButton.textContent = "Save";
+      const toggleButton = document.getElementById("edit-mode-toggle");
+      if (toggleButton && toggleButton.dataset.toggled === "true") {
+        toggleButton.click();
+      }
+    } catch (error) {
+      console.error("Failed to save:", error);
+      saveButton.textContent = "Save";
+      saveButton.disabled = false;
+    }
+  }
+  function displayFieldContent() {
+    const editorDiv = document.getElementById("editor");
+    editorDiv.classList.add("ck-content");
+    const objectType = $RallyContext.Settings.type || "ViewFilter";
+    let objectRef;
+    if (objectType === "Project") {
+      objectRef = $RallyContext.GlobalScope.Project?._ref;
+    } else {
+      objectRef = $RallyContext.ViewFilter?.Value?._ref;
+      if (!$RallyContext.ViewFilter?.Value?.ObjectID > 0) {
+        editorDiv.innerHTML = '<div class="chr-WidgetInfoBox chr-WidgetInfoBox--warning">No View Filter selected.  Please select a View Filter.</div>';
+        objectRef = null;
+        return;
+      }
+    }
+    if (!objectRef) {
+      editorDiv.innerHTML = '<div class="chr-WidgetInfoBox chr-WidgetInfoBox--warning">No object reference found.</div>';
+      return;
+    }
+    fetchWsapiObject(objectRef, [$RallyContext.Settings.field]).then((result) => {
+      originalContent = result[$RallyContext.Settings.field] || "";
+      editorDiv.innerHTML = originalContent;
+    }).catch((error) => {
+      console.error("Error fetching field content:", error);
+      editorDiv.innerHTML = '<div class="chr-WidgetInfoBox chr-WidgetInfoBox--error">Error loading content.</div>';
+    });
+  }
+  function activateEditor() {
+    if (editorInstance) return;
+    const editorDiv = document.getElementById("editor");
+    editorDiv.classList.remove("ck-content");
+    editorDiv.innerHTML = originalContent;
+    ClassicEditor.create(editorDiv, {
+      // Customize the toolbar to remove image and media upload buttons.
+      toolbar: {
+        items: [
+          "heading",
+          "|",
+          "bold",
+          "italic",
+          "link",
+          "bulletedList",
+          "numberedList",
+          "|",
+          "outdent",
+          "indent",
+          "|",
+          "blockQuote",
+          "insertTable",
+          "undo",
+          "redo"
+        ]
+      }
+    }).then((editor) => {
+      editorInstance = editor;
+      console.log("Editor activated.");
+      document.getElementById("save-button").style.display = "inline-block";
+      editor.model.document.on("change:data", () => {
+        const saveButton = document.getElementById("save-button");
+        const currentContent = editor.getData();
+        saveButton.disabled = currentContent === originalContent;
+      });
+    }).catch((error) => {
+      console.error("Error creating editor:", error);
+      editorDiv.innerHTML = `<div class="chr-WidgetInfoBox chr-WidgetInfoBox--error">Failed to create editor.</div>`;
+    });
+  }
+  function deactivateEditor() {
+    if (!editorInstance) return;
+    const saveButton = document.getElementById("save-button");
+    saveButton.style.display = "none";
+    saveButton.disabled = true;
+    const editorData = editorInstance.getData();
+    editorInstance.destroy().then(() => {
+      editorInstance = null;
+      console.log("Editor deactivated.");
+      const editorDiv = document.getElementById("editor");
+      editorDiv.classList.add("ck-content");
+      editorDiv.innerHTML = editorData;
+    }).catch((error) => {
+      console.error("Error destroying editor:", error);
+      displayFieldContent();
+    });
+  }
+  function getEditableFieldsForType(typeToQuery) {
+    let typeDef;
+    if (typeToQuery === "Project") {
+      typeDef = $RallyContext.Schema.find((t) => t.TypePath === "Project");
+    } else {
+      const viewFilterType = $RallyContext.ViewFilter?.Type;
+      if (!viewFilterType) {
+        console.error("No View Filter type found");
+        return [];
+      }
+      typeDef = $RallyContext.Schema.find((t) => t.TypePath === viewFilterType);
+    }
+    if (!typeDef) {
+      console.error(`Type definition not found for ${typeToQuery}`);
+      return [];
+    }
+    const editableFields = typeDef.Attributes.filter(
+      (attr) => !attr.Hidden && !attr.ReadOnly && attr.AttributeType === "TEXT"
+    ).sort((a, b) => a.DisplayName.localeCompare(b.DisplayName));
+    return editableFields.map((attr) => ({
+      name: attr.DisplayName,
+      value: attr.ElementName
+      // The value will be the field's API name
+    }));
+  }
+  function updateFieldDropdown(selectedType) {
+    const fieldDropdown = document.getElementById("field-selector-dropdown");
+    if (!fieldDropdown) return;
+    if (selectedType === "ViewFilter" && !$RallyContext.ViewFilter?.Type) {
+      console.warn("View Filter not available, switching to Project");
+      const typeDropdown = document.getElementById("type-selector-dropdown");
+      const typeSelectElement = typeDropdown?.querySelector("select");
+      if (typeSelectElement) {
+        typeSelectElement.value = "Project";
+      }
+      updateFieldDropdown("Project");
+      return;
+    }
+    const selectData = getEditableFieldsForType(selectedType);
+    if (selectData.length === 0) {
+      const wrapper2 = document.getElementById("wrapper");
+      wrapper2.innerHTML = `<div class="chr-WidgetInfoBox chr-WidgetInfoBox--warning">No editable rich text fields found for type '${selectedType}'.</div>`;
+      return;
+    }
+    const selectElement = fieldDropdown.querySelector("select");
+    if (!selectElement) return;
+    selectElement.innerHTML = "";
+    selectData.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item.value;
+      option.textContent = item.name;
+      selectElement.appendChild(option);
+    });
+    if (selectData.length > 0) {
+      selectElement.value = selectData[0].value;
+      window.RallyContext.updateSettings({
+        type: selectedType,
+        field: selectData[0].value,
+        allowEdit: $RallyContext.Settings.allowEdit
+      });
+    }
+  }
+  function addEditModeControls() {
+    if (!$RallyContext.isEditMode) return;
+    const hasViewFilter = $RallyContext.ViewFilter?.Type != null;
+    let currentType = $RallyContext.Settings.type || "ViewFilter";
+    if (currentType === "ViewFilter" && !hasViewFilter) {
+      currentType = "Project";
+      window.RallyContext.updateSettings({
+        type: "Project",
+        field: $RallyContext.Settings.field,
+        allowEdit: $RallyContext.Settings.allowEdit
+      });
+    }
+    const selectData = getEditableFieldsForType(currentType);
+    if (selectData.length === 0) {
+      wrapper.innerHTML = `<div class="chr-WidgetInfoBox chr-WidgetInfoBox--warning">No editable rich text fields found for type '${currentType}'.</div>`;
+      return;
+    }
+    addVerticalControlsContainer("controls-container", "wrapper");
+    const typeSelectData = [
+      { name: "Project", value: "Project" }
+    ];
+    if (hasViewFilter) {
+      typeSelectData.unshift({ name: "View Filter", value: "ViewFilter" });
+    }
+    createStyledDropdown({
+      renderTo: "controls-container",
+      id: "type-selector-dropdown",
+      data: typeSelectData,
+      fieldLabel: "Type:",
+      value: currentType,
+      onSelect: (selected) => {
+        updateFieldDropdown(selected.value);
+      }
+    });
+    createStyledDropdown({
+      renderTo: "controls-container",
+      id: "field-selector-dropdown",
+      data: selectData,
+      fieldLabel: "Field to Display:",
+      value: $RallyContext.Settings.field,
+      onSelect: (selected) => {
+        window.RallyContext.updateSettings({
+          type: $RallyContext.Settings.type,
+          field: selected.value,
+          allowEdit: $RallyContext.Settings.allowEdit
+        });
+      }
+    });
+    createToggleSwitch({
+      renderTo: "controls-container",
+      id: "allow-edit-toggle",
+      labelText: "Allow Edit in View Mode:",
+      checked: $RallyContext.Settings.allowEdit || false,
+      onToggle: (isChecked) => {
+        console.log("Allow Edit toggled:", isChecked);
+        window.RallyContext.updateSettings({
+          type: $RallyContext.Settings.type,
+          allowEdit: isChecked,
+          field: $RallyContext.Settings.field
+        });
+      }
+    });
+  }
+})();
+
+</script>
+        <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+    </body>
+</html>
