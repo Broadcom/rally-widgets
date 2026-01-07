@@ -167,8 +167,6 @@
     * @param {Array<object>} items - The array of artifact objects to display.
     */
    export function showDetailsModal(title, items, columns) {
-    console.log('showDetailsModeal', title, items)
-       // --- Create Modal DOM Elements ---
        const overlay = document.createElement('div');
        overlay.className = 'modal-overlay';
        overlay.id = 'details-modal-overlay';
@@ -190,39 +188,8 @@
        const modalBody = document.createElement('div');
        modalBody.className = 'modal-body';
 
-       // --- Create Table ---
        const table = createItemTable(items, 'modal-table', columns);
        modalBody.appendChild(table)
-    //    const table = document.createElement('table');
-    //    table.className = 'modal-table';
-
-    //    const thead = table.createTHead();
-    //    const headerRow = thead.insertRow();
-    //    const headers = ['ID', 'Name', 'Plan Estimate'];
-    //    headers.forEach(headerText => {
-    //        const th = document.createElement('th');
-    //        th.textContent = headerText;
-    //        headerRow.appendChild(th);
-    //    });
-
-    //    const tbody = table.createTBody();
-    //    items.forEach(item => {
-    //        const row = tbody.insertRow();
-    //        columns.forEach(column => {
-    //            const cell = row.insertCell();
-    //            cell.textContent = item[column] || 'N/A';
-    //            if (column === 'FormattedID'){
-    //             cell.innerHTML =  applyFormattedIDTemplate(item);
-    //            } else {
-    //             cell.textContent =item[column] || 'N/A';
-    //            }
-    //        });
-    //     //    row.insertCell().textContent = item.FormattedID || 'N/A';
-    //     //    row.insertCell().textContent = item.Name || 'N/A';
-    //     //    row.insertCell().textContent = item.PlanEstimate || 0;
-    //    });
-
-       // --- Assemble and Append ---
        modalHeader.appendChild(modalTitle);
        modalHeader.appendChild(closeButton);
        modalBody.appendChild(table);
@@ -254,7 +221,6 @@
 
        const thead = table.createTHead();
        const headerRow = thead.insertRow();
-       //const headers = ['ID', 'Name', 'Plan Estimate'];
        if (!headers){ headers = columns}
        headers.forEach(headerText => {
            const th = document.createElement('th');

@@ -26,7 +26,6 @@ window.addEventListener('message', (event) => {
 });
 
 function cleanseSettings(settings){
-    console.log('userSettings',settings);
      let cleansedSettings = settings || {};
   
    //... add code here to clean and validate settings ... 
@@ -43,8 +42,8 @@ function buildWidget() {
         wrapper.innerHTML = getTemplateText();
         
         const pre = document.createElement('pre');
-        pre.style.whiteSpace = 'pre-wrap'; // Ensure long lines wrap
-        pre.style.wordBreak = 'break-all'; // Break long strings
+        pre.style.whiteSpace = 'pre-wrap';
+        pre.style.wordBreak = 'break-all';
         pre.textContent = JSON.stringify($RallyContext, null, 2);
 
         wrapper.appendChild(pre);

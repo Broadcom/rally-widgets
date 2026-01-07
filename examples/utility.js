@@ -27,8 +27,6 @@ export const getPortfolioItemTypeDefinitions = () => {
 }
 
 export const getAllowedValues = (typeDef, fieldName, fieldAttribute) => {
-    // Use optional chaining (?.) to safely access nested properties.
-    console.log('schema',$RallyContext.Schema)
     const allowedValuesList = $RallyContext.Schema?.find((type) => type.TypePath == typeDef)?.Attributes
         ?.find((attr) => attr.ElementName == fieldName)?.AllowedValues;
 
@@ -49,25 +47,23 @@ export const getAllowedValues = (typeDef, fieldName, fieldAttribute) => {
 };
 
 /**
- * 
+ * APPROVED PATTERN
  * Use this fetch pattern for all modern Widgets where only 1 page of data is needed to fetch.
  * Do NOT use Rally.data.wsapi.Store.
  * Parameters: 
- * @param {string} type - the TypeDefinition for the object to fetch 
- * @param {object} params - an object of parameters to pass to the query.  This can include query clauses, fetch fields, order by, etc. Example: 
- * const params = {
-    fetch: 'FormattedID,Name,ScheduleState,PlanEstimate',
-    workspace: $RallyContext.GlobalScope.Workspace._ref,
-    project: $RallyContext.GlobalScope.Project._ref,
-    projectScopeDown: $RallyContext.GlobalScope.ProjectScopeDown,
-    projectScopeUp: $RallyContext.GlobalScope.ProjectScopeUp,
-    query: '(ScheduleState = "Accepted")',
-    order: 'AcceptedDate DESC',
-    pagesize: 2000
-};
- * @param {boolean} returnRawResults - if true, the raw results will be returned instead of the results array.  This is useful for debugging.
- * @returns {Promise<array>} A promise that resolves with the results array.
- * @throws {Error} Throws an error if the results are not found or there is an error.
+ * type - the TypeDefinition for the object to fetch 
+ * params - an object of parameters to pass to the query.  This can include query clauses, fetch fields, order by, etc.
+ * returnRawResults - if true, the raw results will be returned instead of the results array.  This is useful for debugging.
+ * Returns a promise that resolves with the results array.
+ * Throws an error if the results are not found or there is an error.
+ * Example:
+ * const results = await loadWsapiData('HierarchicalRequirement', {
+ *     query: 'Name = "My Requirement"',
+ *     fetch: 'Name,Description',
+ *     order: 'Name ASC'
+ *     pagesize: 100
+ *     start: 0
+ * });
  */
 export const loadWsapiData = (type,params,returnRawResults = false) => {
     var url = `${$RallyContext.Url.origin}/slm/webservice/v2.0/${type}`;
@@ -79,11 +75,10 @@ export const loadWsapiData = (type,params,returnRawResults = false) => {
     return fetch(url)
         .then(response => response.json())
         .then(results => {
-            console.log('results',results);
             if (returnRawResults){
                 return Promise.resolve(results);
             } else if (!results || !results.QueryResult || !results.QueryResult.Results || (results.QueryResult.Errors && results.QueryResult.Errors.length > 0)){
-                var errorMsg = results; //prob need to do something better here 
+                var errorMsg = results;
                 if (results && results.QueryResult  && results.QueryResult.Errors){
                     errorMsg = results.QueryResult.Errors.join(", ");
                 }
@@ -93,17 +88,7 @@ export const loadWsapiData = (type,params,returnRawResults = false) => {
             }
         });
 }
-/**
- * 
- * Use this fetch pattern for all modern Widgets where more than one page of data may be needed
- * Do NOT use Rally.data.wsapi.Store.
- * Parameters: 
- * @param {string} type - the TypeDefinition for the object to fetch 
- * @param {object} params - an object of parameters to pass to the query.  This can include query clauses, fetch fields, order by, etc.
- * @param {array} allData - an array of all the data that has been fetched so far.  This is used to store the data as it is fetched.
- * @returns {Promise<array>} A promise that resolves with the results array.
- * @throws {Error} Throws an error if the results are not found or there is an error.
- */
+
 export async function loadWsapiDataMultiplePages(type, params, allData = []) {
   try {
     const data = await loadWsapiData(type, params, true);                                               
@@ -124,7 +109,7 @@ export async function loadWsapiDataMultiplePages(type, params, allData = []) {
   }
 }
 
-export const getSecurityToken = () => {
+export const getSecurityToken = () => {  
     return window.parent.envConfig.securityToken;
 }
 
@@ -160,13 +145,7 @@ export async function fetchWsapiObject(ref, fetchFields = ['FormattedID', 'Name'
     }
     return result[objectKey];
 }
-/**
- * Updates a single WSAPI object by its ref.
- * @param {string} ref - The _ref of the object to update.
- * @param {object} fieldsToUpdate - key value pairs of the AttributeDefinitions and desired values
- * @param {string} securityToken
- * @returns {Promise<object>} A promise that resolves with the updated object data.
- */
+
 export async function updateWsapiObject(ref,fieldsToUpdate,securityToken){
     
     const type = getWsapiTypeFromRef(ref);
@@ -254,13 +233,12 @@ export const getTimeboxDateAttributes = (timeboxType) => {
 
 export const loadCapacityByProjectFromCapacityPlan = (capacityPlanName) => {
     const capacityPlanQuery = `((CapacityPlan.Name = "${capacityPlanName}") AND (Assignments.CapacityPlanItem.PortfolioItem.InvestmentCategory = "Defects"))`;
-    const capacityPlanFetch = "PlannedCapacityPoints,Project,Name,CapacityPlan"; //todo, do we also get count? 
+    const capacityPlanFetch = "PlannedCapacityPoints,Project,Name,CapacityPlan";
     var cpUrl = `${$RallyContext.Url.origin}/slm/webservice/v2.0/capacityplanproject?workspace=${$RallyContext.GlobalScope.Workspace._ref}&project=${$RallyContext.GlobalScope.Project._ref}&query=${capacityPlanQuery}&fetch=${capacityPlanFetch}`
 
     return fetch(cpUrl)
         .then(response => response.json())
         .then(results => {
-            console.log('results cp', results)
             var capacityPlanProjects = results.QueryResult.Results
             .reduce((cppBreakdown,cpp) => {
                 if (cpp._objectVersion != 0){
@@ -271,6 +249,7 @@ export const loadCapacityByProjectFromCapacityPlan = (capacityPlanName) => {
             return Promise.resolve(capacityPlanProjects);
         })
 }
+
 
 export const getTimeboxProgress = (timebox) =>{
 
@@ -283,12 +262,10 @@ export const getTimeboxProgress = (timebox) =>{
     const startDateMs = new Date(startDate).getTime();
     const endDateMs = new Date(endDate).getTime();
     
-    console.log('startDate',startDateMs,endDateMs)
     if (isNaN(startDateMs) || isNaN(endDateMs) || endDateMs === startDateMs) { return 0; }
 
     if (currentMs >= endDateMs) { return 1;} 
     if (currentMs <= startDateMs) { return 0; }
-    console.log('current',currentMs -startDateMs, endDateMs - startDateMs)
   
     return (currentMs - startDateMs)/(endDateMs - startDateMs);
  }
