@@ -1,0 +1,617 @@
+<!--
+  Build Version: N/A
+  Build Date: 2025-12-18T01:09:15.361Z
+  Checksum (md5): 16f61b1790a6bb9f2f118bf3e78b1126
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+* {
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+a, 
+a:link,
+a:visited,
+a:focus,
+a:hover,
+a:active {
+	color: #3272d9;
+}
+
+.blankSlate {
+	color: #58606e;
+	padding-top: 24px;
+	text-align: center;
+}
+
+.itemViewerPaging {
+	position: fixed;
+	top: 0;
+	width: calc(100% - 20px);
+	z-index: 99999;
+	background-color: #ffffff;
+	padding: 8px 0;
+}
+
+.itemViewerTotalResults {
+	display: flex;
+	font-weight: normal;
+	font-size: 11px;
+	color: #58606e;
+	justify-content: flex-end;
+	padding: 4px 8px;
+    text-align: right;
+    width: 100%;
+}
+
+.itemViewerCollection {
+	margin-top: 40px;
+	margin-bottom: 8px;
+}
+
+.itemViewer {
+	border-top: 1px solid #ebeff5;
+	padding: 4px;
+}
+
+.itemViewer:nth-of-type(1) {
+	border: 0;
+}
+
+.itemViewer-splitContainer {
+	display: flex;
+}
+
+.itemViewer-imgContainer {
+	width: 60px;
+}
+
+.itemViewer-detailContainer {
+	flex: 1;
+	margin-left: 8px;
+}
+
+.itemViewer-detailContainer img {
+	display: none;
+}
+
+.itemViewer-itemLink {
+	font-weight: bold;
+	padding-bottom: 4px;
+}
+
+.itemViewerShowMore {
+	margin-bottom: 16px;
+	text-align: center;
+}
+
+.itemViewer-showMoreContainer {
+	padding: 12px;
+}
+
+.itemViewer-showMore {
+	color: #1d5bbf;
+	cursor: pointer;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.itemViewer-showMore:hover {
+	text-decoration: underline;
+}
+
+.itemViewer-showMore.loading {
+	color: #58606e;
+	cursor: default;
+}
+
+.itemViewer-user-disabled {
+	opacity: .55;
+}
+   /* Use a common font stack that resembles Rally's ProximaNova */
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        /* A container to align multiple dropdowns in a row */
+        /* This class name now matches the one used in ui-utilities.js */
+        .rally-like-controls-container {
+            width: 100%; /* Let the container be full-width */
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start; 
+            align-items: center;
+            gap: 8px; /* Provides spacing between the dropdowns */
+            margin-bottom: 8px; /* Provides spacing below the row of selectors */
+        } 
+
+        .rally-main-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            position: relative; /* Establish a stacking context for the chart */
+            z-index: 1;         /* Ensure it's on a low layer */
+        }
+
+        /* Main container for the label and dropdown for proper alignment */
+        .rally-like-field-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 8px;
+            /* A fixed width can be restrictive. Using flex-grow is more responsive. */
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            max-width: 400px;
+        }
+
+        /* Style for the label next to the dropdown */
+        .rally-like-label {
+            font-size: 12px;
+            color: #58606e;
+            margin-right: 4px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        /* Wrapper for the select element to help style the dropdown arrow */
+        .rally-like-select-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        /* The core style for the <select> element */
+        .rally-like-select {
+            /* Reset default browser appearance */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            /* Sizing and Box Model */
+            width: 100%;
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            height: 32px;
+            padding: 6px 25px 6px 8px; /* Right padding to avoid text overlapping the arrow */
+            border: 1px solid #b2b2b2;
+            border-radius: 0;
+
+            /* Colors and Font */
+            background-color: transparent;
+            color: #434A54;
+            font-size: 12px;
+            font-weight: 400;
+            
+            /* Other */
+            cursor: pointer;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        /* Change border color on focus, similar to Rally */
+        .rally-like-select:focus {
+            outline: none;
+            border-color: #77b9e4;
+        }
+
+        /* Custom dropdown arrow using an SVG background image */
+        .rally-like-select-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            width: 16px;
+            height: 16px;
+            transform: translateY(-50%);
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M8.01535196,11.3038244 L8.01524617,11.303722 L7.98464804,11.3333333 L3.24538346,6.7469161 C2.91820551,6.43029006 2.91820551,5.91693783 3.24538346,5.60031179 C3.5725614,5.28368575 4.10302166,5.28368575 4.4301996,5.60031179 L7.98475383,9.04022709 L11.5698004,5.57080286 C11.8969783,5.25417682 12.4274386,5.25417682 12.7546165,5.57080286 C13.0817945,5.8874289 13.0817945,6.40078113 12.7546165,6.71740717 L8.01535196,11.3038244 Z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none; /* Allows clicks to pass through to the select element */
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-close-button {
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .modal-close-button:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            overflow-y: auto; /* Make the body scrollable if content is too tall */
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .modal-table th, .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .modal-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+
+        /* --- Multi-Select Dropdown Styles --- */
+.multi-select-wrapper {
+    position: relative;
+    flex-grow: 1;
+}
+
+.multi-select-display {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px; /* Match rally-like-select height */
+    height: auto; /* Allow it to grow */
+    padding: 3px 8px; /* Adjust padding for tags */
+}
+
+.multi-select-placeholder {
+    color: #888;
+}
+
+.multi-select-tag {
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.multi-select-tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+}
+.multi-select-tag-remove:hover {
+    color: #333;
+}
+
+.multi-select-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #b2b2b2;
+    z-index: 1001;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.multi-select-dropdown.show {
+    display: block;
+}
+
+.multi-select-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.multi-select-dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.multi-select-dropdown li:hover {
+    background-color: #f0f0f0;
+}
+
+.multi-select-dropdown input[type="checkbox"] {
+    cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+  <div class="itemViewerPaging"></div>
+  <div class="itemViewerCollection"></div>
+  <div class="itemViewerShowMore"></div>
+  <script>
+     // $RallyContext:Begin
+     // $RallyContext:End
+   console.log('$RallyContext',$RallyContext);
+</script>
+<script>
+(() => {
+  // blocked-work/widget.js
+  var defaultSettings = {
+    ignoreViewFilter: false
+  };
+  var allBlockedItems = [];
+  var totalResultCount = 0;
+  var isLoadingMore = false;
+  var main = () => {
+    window.addEventListener("message", (event) => {
+      if (event.origin !== $RallyContext.Url.origin) {
+        return;
+      }
+      if (event.data.type === "RALLY_CONTEXT_LOADED") {
+        if ($RallyContext.isEditMode) {
+          let userSettings = cleanseSettings($RallyContext.Settings);
+          let mergedSettings = { ...defaultSettings, ...userSettings };
+          window.RallyContext.updateSettings(mergedSettings);
+          renderEditMode();
+        } else {
+          fetchItems();
+        }
+      }
+    });
+  };
+  var cleanseSettings = (settings) => {
+    let cleansedSettings = settings || {};
+    if (typeof cleansedSettings.ignoreViewFilter !== "boolean") {
+      cleansedSettings.ignoreViewFilter = false;
+    }
+    return cleansedSettings;
+  };
+  var renderEditMode = () => {
+    const wrapper = document.body;
+    const container = document.createElement("div");
+    container.className = "edit-mode-container";
+    container.style.cssText = 'padding: 16px; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;';
+    const label = document.createElement("label");
+    label.style.cssText = "display: flex; align-items: center; font-size: 14px; font-weight: 600; margin-bottom: 8px;";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = "ignoreViewFilter";
+    checkbox.checked = $RallyContext.Settings.ignoreViewFilter === true;
+    checkbox.style.cssText = "margin-right: 8px; width: 18px; height: 18px; cursor: pointer;";
+    const labelText = document.createElement("span");
+    labelText.textContent = "Ignore View Filter";
+    const helpText = document.createElement("div");
+    helpText.style.cssText = "font-size: 11px; color: #58606e; margin-left: 26px; margin-top: 4px;";
+    helpText.textContent = "When checked, all blocked items in the selected project scope are displayed regardless of view filter. When unchecked (default), only blocked items matching the current view filter (Iteration/Release) are shown.";
+    label.appendChild(checkbox);
+    label.appendChild(labelText);
+    container.appendChild(label);
+    container.appendChild(helpText);
+    checkbox.addEventListener("change", (e) => {
+      window.RallyContext.updateSettings({
+        ignoreViewFilter: e.target.checked
+      });
+    });
+    wrapper.innerHTML = "";
+    wrapper.appendChild(container);
+  };
+  var fetchItems = async (startIndex) => {
+    if (isLoadingMore) return;
+    const scoping = `workspace=${$RallyContext.GlobalScope.Workspace._ref}&project=${$RallyContext.GlobalScope.Project._ref}&projectScopeUp=${$RallyContext.GlobalScope.ProjectScopeUp}&projectScopeDown=${$RallyContext.GlobalScope.ProjectScopeDown}`;
+    const blockedFetchFields = `WorkProduct,Project,Name,Description,FormattedID,CreationDate,BlockedBy,BlockedReason,Disabled,ObjectID,EmailAddress,Iteration,Release,Milestones`;
+    let blockedFetchUrl = `${$RallyContext.Url.origin}/slm/webservice/v2.x/blocker?${scoping}&fetch=${blockedFetchFields}&pagesize=200&order=CreationDate%20DESC`;
+    const settings = $RallyContext.Settings || defaultSettings;
+    const shouldApplyFilter = !settings.ignoreViewFilter && $RallyContext.ViewFilter && $RallyContext.ViewFilter.Type && $RallyContext.ViewFilter.Value;
+    if (shouldApplyFilter) {
+      const query = buildTimeboxQuery();
+      if (query) {
+        blockedFetchUrl += `&query=${encodeURIComponent(query)}`;
+      }
+    }
+    const url = startIndex ? `${blockedFetchUrl}&start=${startIndex}` : blockedFetchUrl;
+    try {
+      if (startIndex) {
+        isLoadingMore = true;
+        renderShowMoreButton(true);
+      }
+      const fetchResponse = await fetch(url);
+      const dataResults = await fetchResponse.json();
+      if (shouldApplyFilter) {
+        dataResults.QueryResult.Results = filterByTimebox(dataResults.QueryResult.Results);
+      }
+      if (!startIndex) {
+        totalResultCount = shouldApplyFilter ? dataResults.QueryResult.Results.length : dataResults.QueryResult.TotalResultCount;
+        allBlockedItems = [];
+      }
+      allBlockedItems = allBlockedItems.concat(dataResults.QueryResult.Results);
+      renderWidget(dataResults.QueryResult, startIndex);
+      isLoadingMore = false;
+    } catch (error) {
+      console.error("Failed to fetch blocked items:", error);
+      isLoadingMore = false;
+      renderErrorState(error);
+    }
+  };
+  var renderErrorState = (error) => {
+    const collection = document.querySelector(".itemViewerCollection");
+    collection.innerHTML = `<div class="blankSlate error">
+        Unable to load blocked items. Please try refreshing the page.
+    </div>`;
+  };
+  var buildTimeboxQuery = () => {
+    return null;
+  };
+  var filterByTimebox = (blockers) => {
+    const viewFilter = $RallyContext.ViewFilter;
+    return blockers.filter((blocker) => {
+      const workProduct = blocker.WorkProduct;
+      if (!workProduct) {
+        return false;
+      }
+      if (viewFilter.Type === "Iteration") {
+        return workProduct.Iteration && workProduct.Iteration.Name === viewFilter.Value.Name;
+      } else if (viewFilter.Type === "Release") {
+        return workProduct.Release && workProduct.Release.Name === viewFilter.Value.Name;
+      } else if (viewFilter.Type === "Milestone") {
+        if (!workProduct.Milestones || workProduct.Milestones.Count === 0) {
+          return false;
+        }
+        return workProduct.Milestones._tagsNameArray && workProduct.Milestones._tagsNameArray.some(
+          (milestone) => milestone._ref === viewFilter.Value._ref
+        );
+      }
+      return true;
+    });
+  };
+  var renderWidget = (queryResult, startIndex) => {
+    const collection = document.querySelector(".itemViewerCollection");
+    if (allBlockedItems.length > 0) {
+      const itemsHtml = allBlockedItems.map((record) => {
+        const formattedRecord = { ...record };
+        formattedRecord.CreationDate = formatDateWithConfiguration(record.CreationDate);
+        return blockedItemTemplate(formattedRecord);
+      }).join("");
+      collection.innerHTML = itemsHtml;
+      renderPagingBar(queryResult, startIndex);
+      renderShowMoreButton(false, queryResult);
+    } else {
+      collection.innerHTML = '<div class="blankSlate">There are no items to display.</div>';
+      document.querySelector(".itemViewerPaging").innerHTML = "";
+      document.querySelector(".itemViewerShowMore").innerHTML = "";
+    }
+  };
+  var formatDateWithConfiguration = (date) => {
+    const usersDateFormat = $RallyContext.GlobalScope.Workspace.WorkspaceConfiguration.DateFormat;
+    const tempDate = new Date(date);
+    const month = String(tempDate.getMonth() + 1).padStart(2, "0");
+    const day = String(tempDate.getDate()).padStart(2, "0");
+    const year = tempDate.getFullYear();
+    return usersDateFormat.replace(/MM/, month).replace(/yyyy/, year).replace(/dd/, day);
+  };
+  var applyFormattedIDTemplate = (record) => {
+    return `<a href="${$RallyContext.Url.origin}/#/${$RallyContext.GlobalScope.Project.ObjectID}d?detail=/${record._type}/${record.ObjectID}/details" target="_blank">${record.FormattedID}</a>: ${record.Name}`;
+  };
+  var applyUserAvatarTemplate = (record, disabledClass, disabledTitle) => {
+    return `<img alt="User Profile Avatar" src="/slm/profile/image/${record.ObjectID}/55.sp" class="itemViewer-avatar ${disabledClass}" ${disabledTitle}>`;
+  };
+  var applyRevisionTemplate = (record, disabledClass, disabledTitle) => {
+    return `<div class="itemViewer-detail ${disabledClass}" ${disabledTitle}>\u{1F5D3}\uFE0F ${record.CreationDate} by ${record.BlockedBy._refObjectName} (${record.BlockedBy.EmailAddress}) in ${record.WorkProduct.Project.Name}</div>`;
+  };
+  var applyContentTemplate = (content) => {
+    return content && content.length > 0 ? `<div class="itemViewer-content">\u{1F6D1} ${content}</div>` : "";
+  };
+  var blockedItemTemplate = (record) => {
+    const disabledClass = record.BlockedBy.Disabled ? "itemViewer-user-disabled" : "";
+    const disabledTitle = record.BlockedBy.Disabled ? ' title="User is Disabled"' : "";
+    return `<div class="itemViewer">
+        <div class="itemViewer-itemLink">${applyFormattedIDTemplate(record.WorkProduct)}</div>
+        <div class="itemViewer-splitContainer">
+            <div class="itemViewer-imgContainer">${applyUserAvatarTemplate(record.BlockedBy, disabledClass, disabledTitle)}</div>
+            <div class="itemViewer-detailContainer">${applyRevisionTemplate(record, disabledClass, disabledTitle)}${applyContentTemplate(record.WorkProduct.BlockedReason)}</div>
+        </div>
+    </div>`;
+  };
+  var renderPagingBar = (queryResult, startIndex) => {
+    const displayedItems = allBlockedItems.length;
+    const settings = $RallyContext.Settings || defaultSettings;
+    const isFollowingViewFilter = !settings.ignoreViewFilter && $RallyContext.ViewFilter && $RallyContext.ViewFilter.Type && $RallyContext.ViewFilter.Value;
+    let countText;
+    if (totalResultCount > displayedItems) {
+      countText = `${displayedItems} of ${totalResultCount} items`;
+    } else {
+      countText = `${displayedItems} items`;
+    }
+    if (isFollowingViewFilter) {
+      const timeboxName = $RallyContext.ViewFilter.Value.Name || $RallyContext.ViewFilter.Type;
+      countText += ` in ${timeboxName}`;
+    }
+    document.querySelector(".itemViewerPaging").innerHTML = `<div class="itemViewerTotalResults">
+        <div></div>
+        <div></div>
+        <div>${countText}</div>
+    </div>`;
+  };
+  var renderShowMoreButton = (isLoading, queryResult) => {
+    const showMoreContainer = document.querySelector(".itemViewerShowMore");
+    if (!showMoreContainer) return;
+    const displayedItems = allBlockedItems.length;
+    const hasMore = displayedItems < totalResultCount;
+    if (isLoading) {
+      showMoreContainer.innerHTML = `<div class="itemViewer-showMoreContainer">
+            <span class="itemViewer-showMore loading">Loading...</span>
+        </div>`;
+    } else if (hasMore && queryResult) {
+      const nextStartIndex = queryResult.StartIndex + queryResult.PageSize;
+      showMoreContainer.innerHTML = `<div class="itemViewer-showMoreContainer">
+            <span tabindex="0" class="itemViewer-showMore" data-start-index="${nextStartIndex}">Show 200 More</span>
+        </div>`;
+      const showMoreBtn = showMoreContainer.querySelector(".itemViewer-showMore");
+      if (showMoreBtn) {
+        showMoreBtn.addEventListener("click", () => {
+          fetchItems(nextStartIndex);
+        });
+        showMoreBtn.addEventListener("keypress", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            fetchItems(nextStartIndex);
+          }
+        });
+      }
+    } else {
+      showMoreContainer.innerHTML = "";
+    }
+  };
+  main();
+})();
+
+</script>
+
+</body>
+</html>

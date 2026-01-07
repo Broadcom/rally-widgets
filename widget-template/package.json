@@ -1,0 +1,21 @@
+{
+  "name": "widget-template",
+  "private": true,
+  "description": "example template for building a widget.",
+  "scripts": {
+    "start": "http-server -p 8000 --cors",
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.27.7",
+    "@babel/preset-env": "^7.27.2",
+    "babel-jest": "^30.0.2",
+    "esbuild": "^0.25.5",
+    "gridjs": "^6.2.0",
+    "http-server": "^14.1.1",
+    "jest": "^29.7.0"
+  }
+}

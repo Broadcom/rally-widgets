@@ -1,0 +1,1019 @@
+<!--
+  Build Version: N/A
+  Build Date: 2025-12-30T21:19:27.979Z
+  Checksum (md5): e62fa7354d84fc4d4f3f38edd5f6d58a
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+* {
+    color: #434A54;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    --progressBar-height: 18px;
+    --progressBar-border-radius: 4px;
+    --critical-color: #f55353;
+    --atRisk-color: #f78f4a;
+    --good-color: #57c282;
+}
+
+body {
+    margin: 0;
+}
+
+.infoMessageContainer {
+    align-items: center;
+    background-color: #f5f7fa;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    min-height: 400px;
+    width: 100%;
+}
+
+.infoMessageText {
+    align-items: center;
+    background-color: #f0f5fc;
+    border: 1px solid #ffffff;
+    border-color: #1d5bbf;
+    border-radius: 3px;
+    color: #000000;
+    display: flex;
+    font-size: 14px;
+    margin: 0 16px;
+    padding: 16px;
+    position: absolute;
+}
+
+.loadingMask {
+    align-items: center;
+    background-color: rgba(0, 0, 0, .2);
+    bottom: 0;
+    display: flex;
+    color: #58606e;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: 0;
+    z-index: 100;
+}
+
+.loadingMaskPill {
+    background-color: #ffffff;
+    border-radius: var(--progressBar-border-radius);
+    left: auto;
+    padding: 12px;
+    position: absolute;
+    right: auto;
+    top: auto;
+}
+
+.loadingMaskStatus {
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+.projectDashboard {
+    border-spacing: 0;
+    display: none;
+    width: 100%;
+}
+
+.projectDashboardHeaderRow {
+    background-color: #dde3ed;
+    height: 50px;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 99999;
+} 
+
+.projectDashboard th {
+    padding: 8px;
+    vertical-align: top;
+}
+
+.projectDashboard th:nth-of-type(1) {
+    min-width: 200px;
+} 
+
+.projectDashboard th:nth-of-type(2) {
+    width: 85px;
+} 
+
+.projectDashboard th:nth-of-type(3) {
+    width: 160px;
+} 
+
+.projectDashboard th:nth-of-type(4),
+.projectDashboard th:nth-of-type(5),
+.projectDashboard th:nth-of-type(6) {
+    width: 160px;
+} 
+
+.projectDashboard th:nth-of-type(7) {
+    min-width: 200px;
+} 
+
+.projectDashboard td:nth-of-type(1) {
+    font-weight: bold;
+    padding-left: 8px;
+}
+
+.projectDashboard th {
+    text-align: left;
+}
+
+.parentProjectRow {
+    background-color: #ffffff;
+    height: 120px;
+    position: sticky;
+    top: 50px;
+    width: 100%;
+    z-index: 99999;
+}
+
+.parentProjectRow td {
+    border-bottom: 1px solid #dde3ed;
+}
+
+.childProjectRow td:nth-of-type(1) {
+    font-weight: normal;
+    padding-left: 38px;
+}
+
+.daysRemainingDiv {
+    font-weight: normal;
+}
+
+.progressBarContainer {
+    background-color: #e6e6e6;
+    border-radius: var(--progressBar-border-radius);
+    height: var(--progressBar-height);
+    line-height: var(--progressBar-height);
+    position: relative;
+    width: 125px;
+}
+
+.progressBar {
+    background-color: var(--good-color);
+    border-radius: var(--progressBar-border-radius) 0 0 var(--progressBar-border-radius);
+    height: var(--progressBar-height);
+    line-height: var(--progressBar-height);
+    text-align: center;
+    width: 0%;
+}
+
+.progressBar-complete {
+    border-radius: var(--progressBar-border-radius);
+}
+
+.progressBarLabel {
+    font-weight: bold;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    width: 100%;
+}
+
+.progressBarDetails {
+    padding-top: 4px;
+    text-align: center;
+    width: 125px;
+}
+
+.workdaysLine {
+    position: absolute; 
+    top: 0; 
+    width: 2px; 
+    height: 100%; 
+    background-color: black;
+}
+
+.status-AtRisk .progressBar {
+    background-color: var(--atRisk-color);
+}
+
+.status-Critical .progressBar {
+    background-color: var(--critical-color);
+}
+   /* Use a common font stack that resembles Rally's ProximaNova */
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        /* A container to align multiple dropdowns in a row */
+        /* This class name now matches the one used in ui-utilities.js */
+        .rally-like-controls-container {
+            width: 100%; /* Let the container be full-width */
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start; 
+            align-items: center;
+            gap: 8px; /* Provides spacing between the dropdowns */
+            margin-bottom: 8px; /* Provides spacing below the row of selectors */
+        } 
+
+        .rally-main-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            position: relative; /* Establish a stacking context for the chart */
+            z-index: 1;         /* Ensure it's on a low layer */
+        }
+
+        /* Main container for the label and dropdown for proper alignment */
+        .rally-like-field-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 8px;
+            /* A fixed width can be restrictive. Using flex-grow is more responsive. */
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            max-width: 400px;
+        }
+
+        /* Style for the label next to the dropdown */
+        .rally-like-label {
+            font-size: 12px;
+            color: #58606e;
+            margin-right: 4px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        /* Wrapper for the select element to help style the dropdown arrow */
+        .rally-like-select-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        /* The core style for the <select> element */
+        .rally-like-select {
+            /* Reset default browser appearance */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            /* Sizing and Box Model */
+            width: 100%;
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            height: 32px;
+            padding: 6px 25px 6px 8px; /* Right padding to avoid text overlapping the arrow */
+            border: 1px solid #b2b2b2;
+            border-radius: 0;
+
+            /* Colors and Font */
+            background-color: transparent;
+            color: #434A54;
+            font-size: 12px;
+            font-weight: 400;
+            
+            /* Other */
+            cursor: pointer;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        /* Change border color on focus, similar to Rally */
+        .rally-like-select:focus {
+            outline: none;
+            border-color: #77b9e4;
+        }
+
+        /* Custom dropdown arrow using an SVG background image */
+        .rally-like-select-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            width: 16px;
+            height: 16px;
+            transform: translateY(-50%);
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M8.01535196,11.3038244 L8.01524617,11.303722 L7.98464804,11.3333333 L3.24538346,6.7469161 C2.91820551,6.43029006 2.91820551,5.91693783 3.24538346,5.60031179 C3.5725614,5.28368575 4.10302166,5.28368575 4.4301996,5.60031179 L7.98475383,9.04022709 L11.5698004,5.57080286 C11.8969783,5.25417682 12.4274386,5.25417682 12.7546165,5.57080286 C13.0817945,5.8874289 13.0817945,6.40078113 12.7546165,6.71740717 L8.01535196,11.3038244 Z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none; /* Allows clicks to pass through to the select element */
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-close-button {
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .modal-close-button:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            overflow-y: auto; /* Make the body scrollable if content is too tall */
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .modal-table th, .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .modal-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+
+        /* --- Multi-Select Dropdown Styles --- */
+.multi-select-wrapper {
+    position: relative;
+    flex-grow: 1;
+}
+
+.multi-select-display {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px; /* Match rally-like-select height */
+    height: auto; /* Allow it to grow */
+    padding: 3px 8px; /* Adjust padding for tags */
+}
+
+.multi-select-placeholder {
+    color: #888;
+}
+
+.multi-select-tag {
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.multi-select-tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+}
+.multi-select-tag-remove:hover {
+    color: #333;
+}
+
+.multi-select-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #b2b2b2;
+    z-index: 1001;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.multi-select-dropdown.show {
+    display: block;
+}
+
+.multi-select-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.multi-select-dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.multi-select-dropdown li:hover {
+    background-color: #f0f0f0;
+}
+
+.multi-select-dropdown input[type="checkbox"] {
+    cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+  <table class="projectDashboard">
+    <thead>
+    <tr class="projectDashboardHeaderRow">
+      <th>Project</th>
+      <th><span class="timeboxTypeSpan"></span> Health</th>
+      <th>Accepted<div class="daysRemainingDiv"></div></th>
+      <th>Scheduled Work</th>
+      <th class="defectsChartHeader">Defects</th>
+      <th class="testCasesChartHeader">Test Cases</th>
+      <th>Burndown</th>
+    </tr>
+  </thead>
+  <tbody class="tbody"></tbody>
+  </table>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/series-label.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+  <script>
+     // $RallyContext:Begin
+     // $RallyContext:End
+   console.log('$RallyContext',$RallyContext);
+ </script>
+ <script>
+(() => {
+  // timebox-dashboard/widget.js
+  var main = () => {
+    displayLoadingMask();
+    window.addEventListener("message", (event) => {
+      if (event.origin !== $RallyContext.Url.origin) {
+        return;
+      }
+      if (event.data.type === "RALLY_CONTEXT_LOADED") {
+        if ($RallyContext.ViewFilter.Type === "Iteration" || $RallyContext.ViewFilter.Type === "Release") {
+          scoping = `workspace=${$RallyContext.GlobalScope.Workspace._ref}&project=${$RallyContext.GlobalScope.Project._ref}&projectScopeUp=${$RallyContext.GlobalScope.ProjectScopeUp}&projectScopeDown=${$RallyContext.GlobalScope.ProjectScopeDown}`;
+          mergeSettings();
+          hideDisabledTableHeaders();
+          addEmptyProjectObject($RallyContext.GlobalScope.Project);
+          fetchArtifactItems();
+          if (!disableTestCasesCharts) {
+            fetchTestCaseItems();
+          }
+        } else {
+          displayFilterWarning();
+        }
+      }
+    });
+  };
+  var displayFilterWarning = () => {
+    const dashboardTable = document.querySelector(".projectDashboard");
+    const parentNode = dashboardTable.parentNode;
+    dashboardTable.remove();
+    parentNode.innerHTML = `<div class="infoMessageContainer">
+            <div class="infoMessageText" role="presentation">
+                <span>Select a timebox to display data</span>
+            </div>
+        </div>`;
+  };
+  var displayLoadingMask = () => {
+    const loadingMaskDiv = document.createElement("div");
+    loadingMaskDiv.classList.add("loadingMask");
+    const loadingMaskPill = document.createElement("div");
+    loadingMaskPill.classList.add("loadingMaskPill");
+    const loadingMaskStatus = document.createElement("span");
+    Object.assign(loadingMaskStatus, {
+      className: "loadingMaskStatus",
+      innerHTML: "Loading...",
+      role: "status"
+    });
+    loadingMaskPill.appendChild(loadingMaskStatus);
+    loadingMaskDiv.appendChild(loadingMaskPill);
+    document.body.appendChild(loadingMaskDiv);
+  };
+  var removeLoadingMask = () => {
+    document.querySelector(".loadingMask").remove();
+    const dashboardTable = document.querySelector(".projectDashboard");
+    dashboardTable.style.display = "table";
+  };
+  var mergeSettings = () => {
+    const userSettings = $RallyContext.Settings || {};
+    const mergedSettings = { ...defaultSettings, ...userSettings };
+    disableDefectsCharts = mergedSettings.disableDefectsCharts;
+    disableTestCasesCharts = mergedSettings.disableTestCasesCharts;
+  };
+  var hideDisabledTableHeaders = () => {
+    if (disableDefectsCharts) {
+      document.querySelector(".defectsChartHeader").style.display = "none";
+    }
+    if (disableTestCasesCharts) {
+      document.querySelector(".testCasesChartHeader").style.display = "none";
+    }
+  };
+  var buildAllowedValuesMap = () => {
+    const map = {
+      scheduleStates: [],
+      defectStates: [],
+      lastVerdicts: []
+    };
+    const scheduleStateAttr = $RallyContext.Schema.find((t) => t.Name === "Schedulable Artifact")?.Attributes.find((a) => a.Name === "Schedule State");
+    if (scheduleStateAttr) {
+      map.scheduleStates = scheduleStateAttr.AllowedValues.map((v) => v.StringValue);
+    }
+    if (!disableDefectsCharts) {
+      const defectStateAttr = $RallyContext.Schema.find((t) => t.Name === "Defect")?.Attributes.find((a) => a.Name === "State");
+      if (defectStateAttr) {
+        map.defectStates = defectStateAttr.AllowedValues.map((v) => v.StringValue);
+      }
+    }
+    if (!disableTestCasesCharts) {
+      const lastVerdictAttr = $RallyContext.Schema.find((t) => t.Name === "Test Case Result")?.Attributes.find((a) => a.Name === "Verdict");
+      if (lastVerdictAttr) {
+        map.lastVerdicts = lastVerdictAttr.AllowedValues.map((v) => v.StringValue);
+      }
+    }
+    return map;
+  };
+  async function pagedFetchAndConcatData(url, allData = []) {
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      const { PageSize, StartIndex, TotalResultCount } = data.QueryResult;
+      const nextStartIndex = StartIndex + PageSize;
+      allData = allData.concat(data.QueryResult.Results);
+      if (StartIndex + PageSize < TotalResultCount) {
+        const urlWithoutStartParam = url.replace(`&start=${StartIndex}`, "");
+        return pagedFetchAndConcatData(`${urlWithoutStartParam}&start=${nextStartIndex}`, allData);
+      } else {
+        return allData;
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      throw error;
+    }
+  }
+  var fetchArtifactItems = async () => {
+    const artifactQuery = `(${buildTimeboxQuery()} OR ${buildTimeboxQuery("Requirement")})`;
+    const artifactFetchFields = "ScheduleState,Project,_refObjectUUID,State,PlanEstimate,AcceptedDate,Name";
+    const artifactFetchUrl = `${$RallyContext.Url.origin}/slm/webservice/v2.x/Artifact?types=hierarchicalrequirement,defect,defectsuite&${scoping}&fetch=${artifactFetchFields}&query=${artifactQuery}&pagesize=2000&order=Project.Name,ScheduleState%20ASC`;
+    pagedFetchAndConcatData(artifactFetchUrl).then((dataResults) => {
+      transformArtifactData(dataResults);
+      setProjectStatuses();
+      fetchBurndowns();
+    }).catch(function(error) {
+      console.log("Fetch Error :-S", error);
+    });
+  };
+  var fetchTestCaseItems = async () => {
+    const testCaseQuery = buildTimeboxQuery("WorkProduct");
+    const testCaseFetchFields = "LastVerdict,Project,_refObjectUUID,Name,FormattedID,WorkProduct";
+    const testCaseFetchUrl = `${$RallyContext.Url.origin}/slm/webservice/v2.x/TestCase?${scoping}&fetch=${testCaseFetchFields}&query=${testCaseQuery}&pagesize=2000&order=LastVerdict%20ASC`;
+    pagedFetchAndConcatData(testCaseFetchUrl).then((dataResults) => {
+      transformTestCaseData(dataResults);
+    }).catch(function(error) {
+      console.log("Fetch Error :-S", error);
+    });
+  };
+  var buildTimeboxQuery = (entity) => {
+    const { Type, Value } = $RallyContext.ViewFilter;
+    const prefix = entity ? `${entity}.` : "";
+    if (Type === "Iteration") {
+      return `((${prefix}Iteration.Name = "${Value.Name}") AND ((${prefix}Iteration.StartDate = "${Value.StartDate}") AND (${prefix}Iteration.EndDate = "${Value.EndDate}")))`;
+    } else if (Type === "Release") {
+      return `((${prefix}Release.Name = "${Value.Name}") AND ((${prefix}Release.ReleaseStartDate = "${Value.ReleaseStartDate}") AND (${prefix}Release.ReleaseDate = "${Value.ReleaseDate}")))`;
+    } else {
+      return "";
+    }
+  };
+  var fetchBurndowns = async () => {
+    const projectUUIDs = Object.keys(projects);
+    try {
+      const burndownPromises = projectUUIDs.map(async (projectUUID) => {
+        const burndownUrl = `${$RallyContext.Url.origin}/apps/garthe/securedV1/timebox-burndown?projectUuid=${projectUUID}&scopeUp=${$RallyContext.GlobalScope.ProjectScopeUp}&scopeDown=${$RallyContext.GlobalScope.ProjectScopeDown}&timeboxType=${$RallyContext.ViewFilter.Type.toLowerCase()}&timeboxUuid=${$RallyContext.ViewFilter.Value._refObjectUUID}&workspaceUuid=${$RallyContext.GlobalScope.Workspace._refObjectUUID}`;
+        const response = await fetch(burndownUrl);
+        const data = await response.json();
+        projects[projectUUID].burndownSeries = data.burndown_series;
+      });
+      await Promise.all(burndownPromises);
+      renderDashboard();
+    } catch (error) {
+      console.log("Fetch Error for Burndowns :-S", error);
+    }
+  };
+  var setProjectStatuses = () => {
+    const today = /* @__PURE__ */ new Date();
+    const startDate = $RallyContext.ViewFilter.Type === "Iteration" ? new Date($RallyContext.ViewFilter.Value.StartDate) : new Date($RallyContext.ViewFilter.Value.ReleaseStartDate);
+    const endDate = $RallyContext.ViewFilter.Type === "Iteration" ? new Date($RallyContext.ViewFilter.Value.EndDate) : new Date($RallyContext.ViewFilter.Value.ReleaseDate);
+    const workDaysInTimebox = getWorkingDaysCounts(startDate, endDate);
+    const workDaysRemaining = getWorkingDaysCounts(today, endDate);
+    const workDaysCompleted = Math.max(workDaysInTimebox - workDaysRemaining - 1, 0);
+    const percentTimeboxComplete = Math.round(workDaysCompleted / workDaysInTimebox * 100);
+    Object.keys(projects).forEach((projectUUID) => {
+      const projectStatus = projects[projectUUID].statuses;
+      projectStatus.workDaysInTimebox = workDaysInTimebox;
+      projectStatus.workDaysRemaining = workDaysRemaining;
+      if (startDate > today) {
+        projectStatus.status = "Not Started";
+      } else {
+        const percentWorkComplete = Math.round(projectStatus.acceptedTotalCount / projectStatus.totalCount * 100);
+        const healthRatio = Math.round(percentWorkComplete / percentTimeboxComplete * 100);
+        if (projectStatus.totalCount === void 0 || today > endDate && percentWorkComplete === 100) {
+          projectStatus.status = "Completed";
+        } else if (healthRatio >= 70 && healthRatio < 90) {
+          projectStatus.status = "At Risk";
+        } else if (healthRatio < 70) {
+          projectStatus.status = "Critical";
+        } else {
+          projectStatus.status = "Good";
+        }
+      }
+    });
+    document.querySelector(".daysRemainingDiv").innerHTML = `${workDaysRemaining}/${workDaysInTimebox} days left`;
+    document.querySelector(".timeboxTypeSpan").innerHTML = $RallyContext.ViewFilter.Type;
+  };
+  var getWorkingDaysCounts = (startDate, endDate) => {
+    let daysTotal = 0;
+    const workdays = $RallyContext.GlobalScope.Workspace.WorkspaceConfiguration.WorkDays;
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const tempDate = new Date(startDate);
+    while (tempDate <= endDate) {
+      const dayOfWeek = tempDate.getDay();
+      if (workdays.indexOf(days[dayOfWeek]) >= 0) {
+        daysTotal++;
+      }
+      tempDate.setDate(tempDate.getDate() + 1);
+    }
+    return daysTotal;
+  };
+  var transformTestCaseData = (testCases) => {
+    testCases.forEach((testCase) => {
+      addEmptyProjectObject(testCase.Project);
+      const lastVerdict = projects[testCase.Project._refObjectUUID].lastVerdicts[testCase.LastVerdict];
+      projects[testCase.Project._refObjectUUID].lastVerdicts[testCase.LastVerdict] = lastVerdict ? lastVerdict + 1 : 1;
+      if (testCase.Project._refObjectUUID !== $RallyContext.GlobalScope.Project._refObjectUUID) {
+        projects[$RallyContext.GlobalScope.Project._refObjectUUID].lastVerdicts[testCase.LastVerdict] = lastVerdict ? lastVerdict + 1 : 1;
+      }
+    });
+  };
+  var transformArtifactData = (artifacts) => {
+    addEmptyProjectObject($RallyContext.GlobalScope.Project);
+    artifacts.forEach((artifact) => {
+      addEmptyProjectObject(artifact.Project);
+      updateProjectData(artifact.Project._refObjectUUID, artifact);
+      if (artifact.Project._refObjectUUID !== $RallyContext.GlobalScope.Project._refObjectUUID) {
+        updateProjectData($RallyContext.GlobalScope.Project._refObjectUUID, artifact);
+      }
+    });
+  };
+  var updateProjectData = (projectUUID, artifact) => {
+    const project = projects[projectUUID];
+    project.scheduleStates[artifact.ScheduleState] = (project.scheduleStates[artifact.ScheduleState] ?? 0) + 1;
+    if (artifact._type === "Defect" && !disableDefectsCharts) {
+      project.defectStates[artifact.State] = (project.defectStates[artifact.State] ?? 0) + 1;
+    }
+    const status = project.statuses;
+    status.totalCount = (status.totalCount ?? 0) + 1;
+    status.totalPlanEstimates = (status.totalPlanEstimates ?? 0) + (artifact.PlanEstimate ?? 0);
+    if (artifact.AcceptedDate) {
+      status.acceptedTotalCount = (status.acceptedTotalCount ?? 0) + 1;
+      status.acceptedTotalPlanEstimates = (status.acceptedTotalPlanEstimates ?? 0) + (artifact.PlanEstimate ?? 0);
+    }
+  };
+  var addEmptyProjectObject = (project) => {
+    if (!projects[project._refObjectUUID]) {
+      projects[project._refObjectUUID] = {
+        name: project.Name,
+        defectStates: {},
+        scheduleStates: {},
+        lastVerdicts: {},
+        burndownSeries: [],
+        burndownSeriesHigh: 0,
+        statuses: {}
+      };
+    }
+  };
+  var generateProgressBar = (num1, num2, lineNum1, lineNum2) => {
+    const percent = Math.round(num1 / num2 * 100) || 0;
+    const linePercent = Math.round(lineNum1 / lineNum2 * 100) || 0;
+    const completeClass = percent === 100 ? "progressBar-complete" : "";
+    const title = num2 ? `${num1}/${num2} artifacts accepted` : "no artifacts scheduled";
+    return `<div class="progressBarContainer">
+        <div class="progressBar ${completeClass}" style="width:${percent}%"></div>
+        <div class="progressBarLabel" title="${title}">${percent}%</div>
+        <div class="workdaysLine" style="left: ${linePercent}%;"></div>
+    </div>
+    <div class="progressBarDetails">${num1}/${num2}</div>`;
+  };
+  var aggregatePieDataSeries = (projectUUID, chartObject, orderArray) => {
+    const dataSeries = [];
+    const totalCount = getSumOfObjectValues(projects[projectUUID][chartObject]);
+    orderArray.forEach((allowedValue, i) => {
+      const count = projects[projectUUID][chartObject][allowedValue];
+      if (projects[projectUUID][chartObject][allowedValue]) {
+        dataSeries.push({
+          name: allowedValue,
+          color: orderedChartColors[i],
+          count,
+          totalCount,
+          y: Math.round(count / totalCount * 100)
+        });
+      }
+    });
+    return dataSeries;
+  };
+  var renderPieChart = (dataSeries, renderElement, type) => {
+    Highcharts.chart(renderElement, {
+      chart: {
+        height: 120,
+        marginLeft: -65,
+        type: "pie"
+      },
+      title: {
+        text: "",
+        align: "left"
+      },
+      tooltip: {
+        formatter: function() {
+          return `${this.point.name}: <b>${this.point.y}%</b><br />${this.point.count} out of ${this.point.totalCount} ${type}`;
+        }
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          borderWidth: 2,
+          cursor: "pointer",
+          dataLabels: {
+            enabled: false,
+            format: "<b>{point.name}</b><br>{point.y}%",
+            distance: 20
+          }
+        }
+      },
+      legend: {
+        enabled: true
+      },
+      series: [{
+        name: "Percentage",
+        data: dataSeries
+      }],
+      credits: {
+        enabled: false
+      }
+    });
+  };
+  var getSumOfObjectValues = (chartObject) => {
+    return Object.values(chartObject).reduce((sum, current) => sum + current, 0);
+  };
+  var aggregateBurndownDataSeries = (projectUUID, chartObject) => {
+    const dataSeries = [{
+      accessibility: {
+        enabled: true
+      },
+      color: "#188f85",
+      dashStyle: "solid",
+      data: [],
+      fillColor: "#44c7bc33",
+      fillOpacity: 0.2,
+      marker: {
+        color: "#188f85",
+        enabled: true,
+        fillColor: "#ffffff",
+        lineColor: "#188f85",
+        lineWidth: 2,
+        radius: 3,
+        symbol: "square"
+      },
+      name: "Remaining Points",
+      type: "area"
+    }, {
+      accessibility: {
+        enabled: true
+      },
+      color: "#cc8304",
+      dashStyle: "solid",
+      data: [],
+      label: {
+        enabled: false
+      },
+      marker: {
+        enabled: false
+      },
+      name: "Ideal (Accepted Points)"
+    }];
+    chartObject.forEach((burndown) => {
+      dataSeries[0].data.push([Date.parse(burndown.event_date), burndown.plan_remaining]);
+      if (dataSeries[1].data.length === 0) {
+        const lastDayInTimebox = $RallyContext.ViewFilter.Type === "Iteration" ? $RallyContext.ViewFilter.Value.EndDate : $RallyContext.ViewFilter.Value.ReleaseDate;
+        dataSeries[1].data.push([Date.parse(burndown.event_date), burndown.plan_estimate]);
+        dataSeries[1].data.push([Date.parse(lastDayInTimebox), 0]);
+      }
+      if (burndown.plan_remaining > projects[projectUUID].burndownSeriesHigh) {
+        projects[projectUUID].burndownSeriesHigh = burndown.plan_remaining;
+      }
+    });
+    return dataSeries;
+  };
+  var renderBurndownChart = (dataSeries, burndownSeriesHigh, renderElement) => {
+    Highcharts.chart(renderElement, {
+      chart: {
+        backgroundColor: "#ffffff",
+        height: 120
+      },
+      plotOptions: {
+        column: {
+          stacking: "normal"
+        },
+        series: {
+          animation: true,
+          shadown: false,
+          borderWidth: 0
+        },
+        area: {
+          label: {
+            enabled: false
+          }
+        }
+      },
+      legend: {
+        enabled: false
+      },
+      title: null,
+      tooltip: {
+        backgroundColor: "white",
+        borderWidth: 0,
+        shared: true,
+        useHTML: true,
+        shape: "rect",
+        xDateFormat: "%Y/%m/%d"
+      },
+      xAxis: {
+        endOnTick: false,
+        labels: {
+          enabled: false
+        },
+        lineColor: "#c8d1e0",
+        startOnTick: false,
+        tickLength: 0,
+        title: {
+          text: null
+        },
+        type: "datetime"
+      },
+      yAxis: {
+        gridLineColor: "#c8d1e0",
+        endOnTick: true,
+        labels: {
+          enabled: false
+        },
+        max: burndownSeriesHigh,
+        maxPadding: 1.5,
+        min: 0,
+        startOnTick: false,
+        tickInterval: 103.8,
+        title: {
+          text: null
+        }
+      },
+      credits: {
+        enabled: false
+      },
+      series: dataSeries
+    });
+  };
+  var createAndPopulateTableRow = (tableRow, contentArray) => {
+    contentArray.forEach((content) => {
+      const cell = document.createElement("td");
+      cell.innerHTML = content;
+      tableRow.appendChild(cell);
+    });
+  };
+  var getProjectUuidsWithParentProjectFirst = () => {
+    const allUuids = Object.keys(projects);
+    const parentUuid = $RallyContext.GlobalScope.Project._refObjectUUID.toString();
+    const otherUuids = allUuids.filter((uuid) => uuid !== parentUuid);
+    return [parentUuid, ...otherUuids];
+  };
+  var renderDashboard = () => {
+    const { scheduleStates, defectStates, lastVerdicts } = buildAllowedValuesMap();
+    const tbody = document.querySelector(".tbody");
+    const fragment = document.createDocumentFragment();
+    const projectUuidsWithParentProjectFirst = getProjectUuidsWithParentProjectFirst();
+    projectUuidsWithParentProjectFirst.forEach((projectUUID, i) => {
+      const project = projects[projectUUID];
+      const workdaysCompleted = project.statuses.status === "Not Started" ? 0 : project.statuses.workDaysInTimebox - project.statuses.workDaysRemaining;
+      const newRow = document.createElement("tr");
+      newRow.classList.add(`status-${project.statuses.status}`.replace(/\s/g, ""));
+      if (i !== 0) {
+        newRow.classList.add("childProjectRow");
+      } else {
+        newRow.classList.add("parentProjectRow");
+      }
+      const rowContent = [
+        project.name,
+        project.statuses.status,
+        generateProgressBar(project.statuses.acceptedTotalCount || 0, project.statuses.totalCount || 0, workdaysCompleted, project.statuses.workDaysInTimebox),
+        `<div id="project${projectUUID}-scheduleStates"><div>`
+      ];
+      if (!disableDefectsCharts) {
+        rowContent.push(`<div id="project${projectUUID}-defectStates"><div>`);
+      }
+      if (!disableTestCasesCharts) {
+        rowContent.push(`<div id="project${projectUUID}-lastVerdicts"><div>`);
+      }
+      rowContent.push(`<div id="project${projectUUID}-burndown"><div>`);
+      createAndPopulateTableRow(newRow, rowContent);
+      fragment.appendChild(newRow);
+    });
+    removeLoadingMask();
+    tbody.appendChild(fragment);
+    projectUuidsWithParentProjectFirst.forEach((projectUUID) => {
+      const project = projects[projectUUID];
+      renderPieChart(aggregatePieDataSeries(projectUUID, "scheduleStates", scheduleStates), `project${projectUUID}-scheduleStates`, "artifacts");
+      if (!disableDefectsCharts) {
+        renderPieChart(aggregatePieDataSeries(projectUUID, "defectStates", defectStates), `project${projectUUID}-defectStates`, "defects");
+      }
+      if (!disableTestCasesCharts) {
+        renderPieChart(aggregatePieDataSeries(projectUUID, "lastVerdicts", lastVerdicts), `project${projectUUID}-lastVerdicts`, "test cases");
+      }
+      renderBurndownChart(aggregateBurndownDataSeries(projectUUID, project.burndownSeries), project.burndownSeriesHigh, `project${projectUUID}-burndown`);
+    });
+  };
+  var defaultSettings = {
+    "disableDefectsCharts": false,
+    "disableTestCasesCharts": false
+  };
+  var projects = {};
+  var scoping = "";
+  var disableDefectsCharts;
+  var disableTestCasesCharts;
+  var orderedChartColors = [
+    "#188f85",
+    //paletteTealGreen500,
+    "#cc8304",
+    //paletteOrange500, 
+    "#ad77d4",
+    //palettePurple500, 
+    "#3f9e20",
+    //paletteGreen500, 
+    "#e65d4e",
+    //paletteRed500, 
+    "#6d7cc9",
+    //paletteNavy500, 
+    "#9e9600",
+    //paletteYellow500,
+    "#e65c81",
+    //palettePink500,
+    "#4288a6",
+    //paletteSteelBlue500,
+    "#968c7b"
+    //paletteTaupe500,
+  ];
+  main();
+})();
+
+</script>
+
+</body>
+</html>

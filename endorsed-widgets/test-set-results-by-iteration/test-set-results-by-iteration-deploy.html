@@ -1,0 +1,694 @@
+<!--
+  Build Version: N/A
+  Build Date: 2025-12-18T15:42:44.049Z
+  Checksum (md5): 086465b9256804f774ec4e1efb7ed61a
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+* {
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    --progressBar-height: 18px;
+    --progressBar-border-radius: 4px;
+}
+
+.hideIfNoData {
+	display: none;
+}
+
+.infoMessageContainer {
+    align-items: center;
+    background-color: #f5f7fa;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    min-height: 400px;
+    width: 100%;
+}
+
+.infoMessageText {
+    align-items: center;
+    background-color: #f0f5fc;
+    border: 1px solid #ffffff;
+    border-color: #1d5bbf;
+    border-radius: 3px;
+    color: #000000;
+    display: flex;
+    font-size: 14px;
+    margin: 0 16px;
+    padding: 16px;
+    position: absolute;
+}
+
+.progressBarColumn {
+	width: 100px;
+}
+
+.progressBarContainer {
+    background-color: #ebeff5;
+    border-radius: var(--progressBar-border-radius);
+    height: var(--progressBar-height);
+    line-height: var(--progressBar-height);
+    margin-right: 5px;
+    position: relative;
+}
+
+.progressBar {
+    background-color: #57c282;
+    border-radius: var(--progressBar-border-radius) 0 0 var(--progressBar-border-radius);
+	height: var(--progressBar-height);
+	line-height: var(--progressBar-height);
+	text-align: center;
+	width: 0;
+}
+
+.progressBar-complete {
+	border-radius: var(--progressBar-border-radius);
+}
+
+.progressBarLabel {
+	font-weight: bold;
+	position: absolute;
+    text-align: center;
+    top: 0;
+    width: 100%;
+}
+
+.summaryTable .summaryRow td {
+	border-bottom: 1px solid black;
+	font-weight: bold;
+}
+
+.summaryTableHeaders {
+    background-color: #dde3ed;
+    padding: 5px;
+}
+
+.summaryTable {
+	border-spacing: 0;
+	margin-bottom: 40px;
+	width: 100%;
+}
+
+.summaryTable th {
+	border-bottom: 1px solid black;
+	text-align: left;
+}
+
+.summaryTable td {
+	border-bottom: 1px solid #ebeff5;
+	padding: 2px 0;
+}
+
+.summaryTablePageCount {
+	display: inline-block;
+    float: right;
+}
+
+.testSetToRun {
+	color: #de1b1b;
+}
+
+.verdictBlock {
+	border-radius: var(--progressBar-border-radius);
+	color: white;
+	text-align: center;
+	text-transform: uppercase;
+	width: 120px;
+}
+
+.verdict-Pass {
+	background-color: #3ba164;
+	color: black;
+}
+
+.verdict-Blocked,
+.verdict-Error,
+.verdict-Inconclusive {
+	background-color: #afbacc;
+	color: black;
+}
+
+.verdict-Fail {
+	background-color: #de1b1b;
+}
+   /* Use a common font stack that resembles Rally's ProximaNova */
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        /* A container to align multiple dropdowns in a row */
+        /* This class name now matches the one used in ui-utilities.js */
+        .rally-like-controls-container {
+            width: 100%; /* Let the container be full-width */
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start; 
+            align-items: center;
+            gap: 8px; /* Provides spacing between the dropdowns */
+            margin-bottom: 8px; /* Provides spacing below the row of selectors */
+        } 
+
+        .rally-main-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            position: relative; /* Establish a stacking context for the chart */
+            z-index: 1;         /* Ensure it's on a low layer */
+        }
+
+        /* Main container for the label and dropdown for proper alignment */
+        .rally-like-field-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 8px;
+            /* A fixed width can be restrictive. Using flex-grow is more responsive. */
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            max-width: 400px;
+        }
+
+        /* Style for the label next to the dropdown */
+        .rally-like-label {
+            font-size: 12px;
+            color: #58606e;
+            margin-right: 4px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        /* Wrapper for the select element to help style the dropdown arrow */
+        .rally-like-select-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        /* The core style for the <select> element */
+        .rally-like-select {
+            /* Reset default browser appearance */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            /* Sizing and Box Model */
+            width: 100%;
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            height: 32px;
+            padding: 6px 25px 6px 8px; /* Right padding to avoid text overlapping the arrow */
+            border: 1px solid #b2b2b2;
+            border-radius: 0;
+
+            /* Colors and Font */
+            background-color: transparent;
+            color: #434A54;
+            font-size: 12px;
+            font-weight: 400;
+            
+            /* Other */
+            cursor: pointer;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        /* Change border color on focus, similar to Rally */
+        .rally-like-select:focus {
+            outline: none;
+            border-color: #77b9e4;
+        }
+
+        /* Custom dropdown arrow using an SVG background image */
+        .rally-like-select-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            width: 16px;
+            height: 16px;
+            transform: translateY(-50%);
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M8.01535196,11.3038244 L8.01524617,11.303722 L7.98464804,11.3333333 L3.24538346,6.7469161 C2.91820551,6.43029006 2.91820551,5.91693783 3.24538346,5.60031179 C3.5725614,5.28368575 4.10302166,5.28368575 4.4301996,5.60031179 L7.98475383,9.04022709 L11.5698004,5.57080286 C11.8969783,5.25417682 12.4274386,5.25417682 12.7546165,5.57080286 C13.0817945,5.8874289 13.0817945,6.40078113 12.7546165,6.71740717 L8.01535196,11.3038244 Z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none; /* Allows clicks to pass through to the select element */
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-close-button {
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .modal-close-button:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            overflow-y: auto; /* Make the body scrollable if content is too tall */
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .modal-table th, .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .modal-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+
+        /* --- Multi-Select Dropdown Styles --- */
+.multi-select-wrapper {
+    position: relative;
+    flex-grow: 1;
+}
+
+.multi-select-display {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px; /* Match rally-like-select height */
+    height: auto; /* Allow it to grow */
+    padding: 3px 8px; /* Adjust padding for tags */
+}
+
+.multi-select-placeholder {
+    color: #888;
+}
+
+.multi-select-tag {
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.multi-select-tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+}
+.multi-select-tag-remove:hover {
+    color: #333;
+}
+
+.multi-select-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #b2b2b2;
+    z-index: 1001;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.multi-select-dropdown.show {
+    display: block;
+}
+
+.multi-select-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.multi-select-dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.multi-select-dropdown li:hover {
+    background-color: #f0f0f0;
+}
+
+.multi-select-dropdown input[type="checkbox"] {
+    cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+  <h2 class="summaryTableHeaders">Test Execution Summary<div class="summaryTablePageCount executionSummaryTableCount"></div></h2>
+  <table class="summaryTable executionSummaryTable">
+    <tr>
+      <th>Test Set ID</th>
+      <th>Test Set</th>
+      <th class="progressBarColumn">Execution</th>
+      <th class="progressBarColumn">Passing</th>
+      <th>Not Run</th>
+      <th>Passed</th>
+      <th>Failed</th>
+      <th>Blocked</th>
+      <th>Inconclusive</th>
+      <th>Error</th>
+      <th>Total</th>
+    </tr>
+  </table>
+  <h2 class="summaryTableHeaders testResultsHeader hideIfNoData">Test Results<div class="summaryTablePageCount testResultsTableCount"></div></h2>
+  <table class="summaryTable testResultsTable hideIfNoData">
+    <tr>
+      <th>Test Set ID</th>
+      <th>Test Set</th>
+      <th>Test Case ID</th>
+      <th>Test Case Name</th>
+      <th>Last Verdict</th>
+      <th>Tester</th>
+      <th>Execution Date</th>
+    </tr>
+  </table>
+  <h2 class="summaryTableHeaders testsRemainingHeader hideIfNoData">Tests Remaining to Run<div class="summaryTablePageCount testsRemainingTableCount"></div></h2>
+  <table class="summaryTable testsRemainingTable hideIfNoData">
+    <tr>
+      <th>Test Set ID</th>
+      <th>Test Set</th>
+      <th>Test Case ID</th>
+      <th>Test Case Name</th>
+    </tr>
+  </table>
+  <script>
+     // $RallyContext:Begin
+     // $RallyContext:End
+   console.log('$RallyContext',$RallyContext);
+ </script>
+ <script>
+(() => {
+  // test-set-results-by-iteration/widget.js
+  var main = () => {
+    window.addEventListener("message", (event) => {
+      if (event.origin !== $RallyContext.Url.origin) {
+        return;
+      }
+      if (event.data.type === "RALLY_CONTEXT_LOADED") {
+        fetchTestSetsAndTestCaseResults();
+      }
+    });
+  };
+  var fetchTestSetsAndTestCaseResults = async () => {
+    if ($RallyContext.ViewFilter.Type === "Iteration") {
+      const iterationName = $RallyContext.ViewFilter.Value.Name;
+      const projectScoping = `&project=${$RallyContext.GlobalScope.Project._ref}&projectScopeUp=${$RallyContext.GlobalScope.ProjectScopeUp}&projectScopeDown=${$RallyContext.GlobalScope.ProjectScopeDown}`;
+      const testSetQuery = `(Iteration.Name = "${iterationName}")`;
+      const testSetFetchFields = "FormattedID,Name,TestCases,ObjectID";
+      const testSetFetchUrl = `${$RallyContext.Url.origin}/slm/webservice/v2.x/TestSet?workspace=${$RallyContext.GlobalScope.Workspace._ref}${projectScoping}&fetch=${testSetFetchFields}&query=${testSetQuery}&pagesize=2000&order=FormattedID ASC`;
+      const testCaseResultQuery = `((TestSet.Iteration.Name = "${iterationName}") AND (TestSet.Project.Name = "${$RallyContext.GlobalScope.Project.Name}"))`;
+      const testCaseResultFetchFields = "TestSet,FormattedID,TestCase,Date,Verdict,Tester,ObjectID,Name";
+      const testCaseResultFetchUrl = `${$RallyContext.Url.origin}/slm/webservice/v2.x/TestCaseResult?workspace=${$RallyContext.GlobalScope.Workspace._ref}&fetch=${testCaseResultFetchFields}&query=${testCaseResultQuery}&pagesize=2000`;
+      try {
+        const testSetResponse = await fetch(testSetFetchUrl);
+        const dataResults = await testSetResponse.json();
+        transformTestSetData(dataResults.QueryResult.Results);
+        const testCaseResultResponse = await fetch(testCaseResultFetchUrl);
+        const testCaseResultDataResults = await testCaseResultResponse.json();
+        transformTestResultData(testCaseResultDataResults.QueryResult.Results);
+        renderExecutionSummaryTable();
+        renderTestResultsTable();
+      } catch (error) {
+        console.log("Fetch Error :-S", error);
+      }
+    } else {
+      displayFilterWarning();
+    }
+  };
+  var displayFilterWarning = () => {
+    const summaryTableHeaders = document.querySelector(".summaryTableHeaders");
+    const parentNode = summaryTableHeaders.parentNode;
+    summaryTableHeaders.classList.add("hideIfNoData");
+    document.querySelector(".executionSummaryTable").classList.add("hideIfNoData");
+    parentNode.innerHTML = `<div class="infoMessageContainer">
+            <div class="infoMessageText" role="presentation">
+                <span>Select an Iteration to display data</span>
+            </div>
+        </div>`;
+  };
+  var transformTestSetData = (testSets) => {
+    testSets.forEach((testSet) => {
+      executionSummary[testSet.FormattedID] = {
+        FormattedID: testSet.FormattedID,
+        Name: testSet.Name,
+        _type: testSet._type,
+        ObjectID: testSet.ObjectID,
+        Pass: 0,
+        Fail: 0,
+        Blocked: 0,
+        Error: 0,
+        Inconclusive: 0,
+        ToRun: 0,
+        Total: testSet.TestCases.Count,
+        PercentComplete: 0,
+        PercentPass: 0
+      };
+      summaryRow.Total += testSet.TestCases.Count;
+    });
+  };
+  var transformTestResultData = (results) => {
+    results.forEach((testResult) => {
+      testResults.push({
+        TestCase: testResult.TestCase,
+        Verdict: testResult.Verdict,
+        Date: testResult.Date,
+        Tester: testResult.Tester,
+        TestSet: testResult.TestSet,
+        ObjectID: testResult.ObjectID
+      });
+      executionSummary[testResult.TestSet.FormattedID][testResult.Verdict] += 1;
+      summaryRow[testResult.Verdict] += 1;
+      executionSummary[testResult.TestSet.FormattedID].PercentComplete += 1;
+      summaryRow.PercentComplete += 1;
+      if (testResult.Verdict === "Pass") {
+        executionSummary[testResult.TestSet.FormattedID].PercentPass += 1;
+        summaryRow.PercentPass += 1;
+      }
+    });
+  };
+  var applyFormattedIDTemplate = (record) => {
+    return `<a href="${$RallyContext.Url.origin}/#/${$RallyContext.GlobalScope.Project.ObjectID}d?detail=/${record._type}/${record.ObjectID}/details" target="_blank">${record.FormattedID}</a>`;
+  };
+  var generateProgressBar = (num1, num2) => {
+    const percent = Math.round(num1 / num2 * 100) || 0;
+    const completeClass = percent === 100 ? "progressBar-complete" : "";
+    return `<div class="progressBarContainer"><div class="progressBar ${completeClass}" style="width:${percent}%"></div><div class="progressBarLabel" title="${num1}/${num2}">${percent}%</div></div>`;
+  };
+  var formatDateWithConfiguration = (date) => {
+    const usersDateFormat = $RallyContext.GlobalScope.Workspace.WorkspaceConfiguration.DateFormat;
+    const tempDate = new Date(date);
+    const month = String(tempDate.getMonth() + 1).padStart(2, "0");
+    ;
+    const day = String(tempDate.getDate()).padStart(2, "0");
+    ;
+    const year = tempDate.getFullYear();
+    return usersDateFormat.replace(/MM/, month).replace(/yyyy/, year).replace(/dd/, day);
+  };
+  var createAndPopulateTableRow = (tableRow, contentArray) => {
+    contentArray.forEach((content, i) => {
+      tableRow.insertCell(i).innerHTML = content;
+    });
+  };
+  var renderExecutionSummaryTable = () => {
+    const table = document.querySelector(".executionSummaryTable");
+    const executionSummaryKeys = Object.keys(executionSummary);
+    document.querySelector(".executionSummaryTableCount").innerHTML = `${executionSummaryKeys.length} items`;
+    executionSummaryKeys.forEach((key) => {
+      const testSet = executionSummary[key];
+      testSet.ToRun = testSet.Total - (testSet.Pass + testSet.Fail + testSet.Blocked + testSet.Inconclusive + testSet.Error);
+      summaryRow.ToRun += testSet.ToRun;
+      const newRow = table.insertRow(-1);
+      createAndPopulateTableRow(newRow, [
+        applyFormattedIDTemplate(testSet),
+        testSet.Name,
+        generateProgressBar(testSet.PercentComplete, testSet.Total),
+        generateProgressBar(testSet.PercentPass, testSet.PercentComplete),
+        testSet.ToRun ? `<span class="testSetToRun">${testSet.ToRun}<span>` : testSet.ToRun,
+        testSet.Pass,
+        testSet.Fail,
+        testSet.Blocked,
+        testSet.Inconclusive,
+        testSet.Error,
+        testSet.Total
+      ]);
+      if (testSet.ToRun) {
+        toRunTestCasesRequests.push(testSet.ObjectID);
+      }
+    });
+    fetchToRunTestCases();
+    renderSummaryRow(table);
+  };
+  var renderSummaryRow = (table) => {
+    const newRow = table.insertRow(1);
+    newRow.classList.add("summaryRow");
+    createAndPopulateTableRow(newRow, [
+      "",
+      "",
+      generateProgressBar(summaryRow.PercentComplete, summaryRow.Total),
+      generateProgressBar(summaryRow.PercentPass, summaryRow.PercentComplete),
+      summaryRow.ToRun ? `<span class="testSetToRun">${summaryRow.ToRun}<span>` : summaryRow.ToRun,
+      summaryRow.Pass,
+      summaryRow.Fail,
+      summaryRow.Blocked,
+      summaryRow.Inconclusive,
+      summaryRow.Error,
+      summaryRow.Total
+    ]);
+  };
+  var renderTestResultsTable = () => {
+    const table = document.querySelector(".testResultsTable");
+    if (testResults.length > 0) {
+      document.querySelector(".testResultsHeader").classList.remove("hideIfNoData");
+      table.classList.remove("hideIfNoData");
+      document.querySelector(".testResultsTableCount").innerHTML = `${testResults.length} items`;
+      testResults.forEach((testResult) => {
+        const newRow = table.insertRow(-1);
+        createAndPopulateTableRow(newRow, [
+          applyFormattedIDTemplate(testResult.TestSet),
+          testResult.TestSet.Name,
+          applyFormattedIDTemplate(testResult.TestCase),
+          testResult.TestCase.Name,
+          `<div class="verdictBlock verdict-${testResult.Verdict}">${testResult.Verdict}<div>`,
+          testResult.Tester ? testResult.Tester._refObjectName : "No Tester Name",
+          formatDateWithConfiguration(testResult.Date)
+        ]);
+      });
+    }
+  };
+  var fetchToRunTestCases = async () => {
+    let toRunTestCases = [];
+    toRunTestCasesRequests.forEach(async (TestSetOID) => {
+      const testCasesFetchFields = "FormattedID,Name,TestCase,TestSet,ObjectID,Results,Count,CreationDate";
+      const testCasesFetchUrl = `${$RallyContext.Url.origin}/slm/webservice/v2.x/testset/${TestSetOID}/scheduledtestcases?fetch=${testCasesFetchFields}&pagesize=2000&order=CreationDate DESC`;
+      try {
+        const testCaseResponse = await fetch(testCasesFetchUrl);
+        const dataResults = await testCaseResponse.json();
+        toRunTestCasesResponses = toRunTestCasesResponses + 1;
+        toRunTestCases = toRunTestCases.concat(dataResults.QueryResult.Results);
+        if (toRunTestCasesRequests.length === toRunTestCasesResponses) {
+          toRunTestCases.sort((a, b) => {
+            if (a.TestSet.CreationDate < b.TestSet.CreationDate) {
+              return -1;
+            } else if (a.TestSet.CreationDate > b.TestSet.CreationDate) {
+              return 1;
+            } else {
+              if (a.TestCase.CreationDate < b.TestCase.CreationDate) {
+                return -1;
+              } else if (a.TestCase.CreationDate > b.TestCase.CreationDate) {
+                return 1;
+              } else {
+                return 0;
+              }
+            }
+          });
+          renderTestsRemainingTable(toRunTestCases);
+        }
+      } catch (err) {
+        console.log("Fetch Error :-S", err);
+      }
+    });
+  };
+  var renderTestsRemainingTable = (testCases) => {
+    const table = document.querySelector(".testsRemainingTable");
+    if (testCases.length > 0) {
+      document.querySelector(".testsRemainingHeader").classList.remove("hideIfNoData");
+      table.classList.remove("hideIfNoData");
+      let testCasesCount = 0;
+      testCases.forEach((testCase) => {
+        if (testCase.Results.Count === 0) {
+          const newRow = table.insertRow(-1);
+          createAndPopulateTableRow(newRow, [
+            applyFormattedIDTemplate(testCase.TestSet),
+            testCase.TestSet.Name,
+            applyFormattedIDTemplate(testCase.TestCase),
+            testCase.Name
+          ]);
+          testCasesCount = testCasesCount + 1;
+        }
+      });
+      document.querySelector(".testsRemainingTableCount").innerHTML = `${testCasesCount} items`;
+    }
+  };
+  var executionSummary = {};
+  var testResults = [];
+  var summaryRow = {
+    Pass: 0,
+    Fail: 0,
+    Blocked: 0,
+    Error: 0,
+    Inconclusive: 0,
+    ToRun: 0,
+    Total: 0,
+    PercentComplete: 0,
+    PercentPass: 0
+  };
+  var toRunTestCasesRequests = [];
+  var toRunTestCasesResponses = 0;
+  main();
+})();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1033 @@
+<!--
+  Build Version: N/A
+  Build Date: 2025-12-18T14:35:38.958Z
+  Checksum (md5): 01ef5c0504b4b8c5513a131c88c9a062
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Activity Widget</title>
+    <style>
+/* CSS Variables for consistent theming */
+:root {
+    --rally-primary-blue: #3272D9;
+    --rally-primary-blue-dark: #2563B8;
+    --rally-error-red: #E65D4E;
+    --rally-text-primary: #434A54;
+    --rally-text-secondary: #666;
+    --rally-text-inactive: #999;
+    --rally-border-color: #e0e0e0;
+    --rally-bg-light: #f5f5f5;
+    --rally-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body {
+    font-family: var(--rally-font-family);
+    color: var(--rally-text-primary);
+    font-size: 14px;
+}
+
+/* Activity Container */
+#activity-container {
+    width: 100%;
+}
+
+/* Loading and No Data Messages */
+.loading-message {
+    padding: 20px;
+    text-align: center;
+    color: var(--rally-text-secondary);
+    font-size: 14px;
+}
+
+.no-data {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--rally-text-secondary);
+    font-size: 14px;
+    background-color: var(--rally-bg-light);
+    border-radius: 4px;
+}
+
+.no-data p {
+    margin: 0;
+    font-size: 16px;
+}
+
+/* Discussion List */
+.discussion-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* List Item */
+.list-item {
+    border-bottom: 1px solid var(--rally-border-color);
+    padding: 16px 0;
+    position: relative;
+}
+
+.list-item.first {
+    padding-top: 0;
+}
+
+.list-item.last {
+    border-bottom: none;
+}
+
+/* Artifact Detail */
+.artifact-detail {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.artifact-detail .artifact-link {
+    color: #3272D9;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.artifact-detail .artifact-link:hover {
+    text-decoration: underline;
+}
+
+/* List Item Info */
+.list-item-info {
+    display: flex;
+    position: relative;
+}
+
+/* User Profile Image */
+.list-item-user {
+    float: left;
+    margin-right: 10px;
+}
+
+.list-item-user .profile {
+    border-radius: 50%;
+    border: 2px solid #e0e0e0;
+    display: block;
+}
+
+/* List Item Details */
+.list-item-details {
+    flex: 1;
+    position: relative;
+    width:100%;
+}
+
+/* Delete Button */
+.delete-comment {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #3272D9;
+    text-decoration: none;
+    font-size: 16px;
+    line-height: 1;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.delete-comment:hover {
+    color: #2563B8;
+    background-color: #f5f5f5;
+}
+
+.delete-comment svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Status Line */
+.status {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.status .profileLink {
+    color: #3272D9;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.status .profileLink:hover {
+    text-decoration: underline;
+}
+
+.status .inactive {
+    color: #999;
+    text-decoration: line-through;
+}
+
+/* Detail Text */
+.detail-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #434A54;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.detail-text p {
+    margin: 0 0 8px 0;
+}
+
+.detail-text p:last-child {
+    margin-bottom: 0;
+}
+
+.detail-text ul,
+.detail-text ol {
+    margin: 8px 0;
+    padding-left: 24px;
+}
+
+.detail-text li {
+    margin-bottom: 4px;
+}
+
+.detail-text a {
+    color: #3272D9;
+    text-decoration: none;
+}
+
+.detail-text a:hover {
+    text-decoration: underline;
+}
+
+.detail-text code {
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+}
+
+.detail-text pre {
+    background-color: #f5f5f5;
+    padding: 8px;
+    border-radius: 3px;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+}
+
+.detail-text img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 8px 0;
+    display: block;
+    border: 1px solid #e0e0e0;
+}
+
+/* Reply Section */
+.reply {
+    font-size: 13px;
+}
+
+.reply-link {
+    color: #3272D9;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.reply-link:hover {
+    text-decoration: underline;
+}
+
+/* Load More Item */
+.load-more-item {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.load-more-link-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Load More and Show More Links - Shared Styles */
+.load-more-link,
+.show-more-link {
+    color: var(--rally-primary-blue);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border: 1px solid var(--rally-primary-blue);
+    border-radius: 4px;
+    display: inline-block;
+    transition: all 0.2s;
+}
+
+.load-more-link:hover,
+.show-more-link:hover {
+    background-color: var(--rally-primary-blue);
+    color: #fff;
+}
+
+.load-more-link[data-loading="true"] {
+    opacity: 0.6;
+    cursor: wait;
+    pointer-events: none;
+}
+
+/* Alert Styles */
+.rally-alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.rally-alert-error {
+    background-color: #fef0ef;
+    border: 1px solid #E65D4E;
+    color: #c53030;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .list-item-user {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .list-item-user .profile {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .list-item-details {
+        padding-left: 50px !important;
+    }
+    
+    .artifact-detail {
+        font-size: 12px;
+    }
+    
+    .status,
+    .reply {
+        font-size: 12px;
+    }
+    
+    .detail-text {
+        font-size: 13px;
+    }
+}
+
+/* Clear floats */
+.clear {
+    clear: both;
+}
+
+/* Animation for new items */
+@keyframes highlight {
+    0% {
+        background-color: #fff3cd;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.list-item.highlighted {
+    animation: highlight 2s ease-out;
+}
+
+/* Vertical Controls Container */
+.rally-like-controls-container-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.rally-like-controls-container-vertical .rally-like-field-container {
+    margin-bottom: 0;
+}
+
+   /* Use a common font stack that resembles Rally's ProximaNova */
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        /* A container to align multiple dropdowns in a row */
+        /* This class name now matches the one used in ui-utilities.js */
+        .rally-like-controls-container {
+            width: 100%; /* Let the container be full-width */
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start; 
+            align-items: center;
+            gap: 8px; /* Provides spacing between the dropdowns */
+            margin-bottom: 8px; /* Provides spacing below the row of selectors */
+        } 
+
+        .rally-main-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            position: relative; /* Establish a stacking context for the chart */
+            z-index: 1;         /* Ensure it's on a low layer */
+        }
+
+        /* Main container for the label and dropdown for proper alignment */
+        .rally-like-field-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 8px;
+            /* A fixed width can be restrictive. Using flex-grow is more responsive. */
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            max-width: 400px;
+        }
+
+        /* Style for the label next to the dropdown */
+        .rally-like-label {
+            font-size: 12px;
+            color: #58606e;
+            margin-right: 4px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        /* Wrapper for the select element to help style the dropdown arrow */
+        .rally-like-select-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        /* The core style for the <select> element */
+        .rally-like-select {
+            /* Reset default browser appearance */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            /* Sizing and Box Model */
+            width: 100%;
+            flex-grow: 1;
+            min-width: 250px; /* Ensures the dropdown doesn't become too small */
+            height: 32px;
+            padding: 6px 25px 6px 8px; /* Right padding to avoid text overlapping the arrow */
+            border: 1px solid #b2b2b2;
+            border-radius: 0;
+
+            /* Colors and Font */
+            background-color: transparent;
+            color: #434A54;
+            font-size: 12px;
+            font-weight: 400;
+            
+            /* Other */
+            cursor: pointer;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        /* Change border color on focus, similar to Rally */
+        .rally-like-select:focus {
+            outline: none;
+            border-color: #77b9e4;
+        }
+
+        /* Custom dropdown arrow using an SVG background image */
+        .rally-like-select-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            width: 16px;
+            height: 16px;
+            transform: translateY(-50%);
+             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M8.01535196,11.3038244 L8.01524617,11.303722 L7.98464804,11.3333333 L3.24538346,6.7469161 C2.91820551,6.43029006 2.91820551,5.91693783 3.24538346,5.60031179 C3.5725614,5.28368575 4.10302166,5.28368575 4.4301996,5.60031179 L7.98475383,9.04022709 L11.5698004,5.57080286 C11.8969783,5.25417682 12.4274386,5.25417682 12.7546165,5.57080286 C13.0817945,5.8874289 13.0817945,6.40078113 12.7546165,6.71740717 L8.01535196,11.3038244 Z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none; /* Allows clicks to pass through to the select element */
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-close-button {
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .modal-close-button:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            overflow-y: auto; /* Make the body scrollable if content is too tall */
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .modal-table th, .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .modal-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+
+        /* --- Multi-Select Dropdown Styles --- */
+.multi-select-wrapper {
+    position: relative;
+    flex-grow: 1;
+}
+
+.multi-select-display {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px; /* Match rally-like-select height */
+    height: auto; /* Allow it to grow */
+    padding: 3px 8px; /* Adjust padding for tags */
+}
+
+.multi-select-placeholder {
+    color: #888;
+}
+
+.multi-select-tag {
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.multi-select-tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+}
+.multi-select-tag-remove:hover {
+    color: #333;
+}
+
+.multi-select-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #b2b2b2;
+    z-index: 1001;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.multi-select-dropdown.show {
+    display: block;
+}
+
+.multi-select-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.multi-select-dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.multi-select-dropdown li:hover {
+    background-color: #f0f0f0;
+}
+
+.multi-select-dropdown input[type="checkbox"] {
+    cursor: pointer;
+}
+
+</style>
+    
+</head>
+
+<body>
+    <div id="wrapper"></div>
+
+    <script>
+        // $RallyContext:Begin
+        // $RallyContext:End
+    </script>
+    <script>
+(() => {
+  // utilities/utility.js
+  var loadWsapiData = (type, params, returnRawResults = false) => {
+    var url = `${$RallyContext.Url.origin}/slm/webservice/v2.0/${type}`;
+    var paramDelimiter = "?";
+    for (const p in params) {
+      url = `${url}${paramDelimiter}${p}=${params[p]}`;
+      paramDelimiter = "&";
+    }
+    return fetch(url).then((response) => response.json()).then((results) => {
+      console.log("results", results);
+      if (returnRawResults) {
+        return Promise.resolve(results);
+      } else if (!results || !results.QueryResult || !results.QueryResult.Results || results.QueryResult.Errors && results.QueryResult.Errors.length > 0) {
+        var errorMsg = results;
+        if (results && results.QueryResult && results.QueryResult.Errors) {
+          errorMsg = results.QueryResult.Errors.join(", ");
+        }
+        Promise.reject(`Error loading WSAPI data from ${url}:  ${errorMsg}`);
+      } else {
+        return Promise.resolve(results.QueryResult.Results);
+      }
+    });
+  };
+  function getRelativeRef(ref) {
+    if (!ref || typeof ref !== "string") {
+      return null;
+    }
+    const apiPrefix = "/slm/webservice/v2.0";
+    let pathname;
+    if (ref.toLowerCase().startsWith("http")) {
+      try {
+        pathname = new URL(ref).pathname;
+      } catch (e) {
+        console.error("Could not parse full _ref URL:", ref, e);
+        return null;
+      }
+    } else {
+      pathname = ref.split("?")[0];
+    }
+    return pathname.startsWith(apiPrefix) ? pathname.substring(apiPrefix.length) : pathname;
+  }
+  function getObjectIDFromRef(ref) {
+    if (!ref || typeof ref !== "string") {
+      return null;
+    }
+    const parts = ref.split("/");
+    const lastPart = parts[parts.length - 1];
+    const objectID = lastPart.split("?")[0];
+    return /^\d+$/.test(objectID) ? objectID : null;
+  }
+
+  // utilities/ui-utilities.js
+  function addVisualizationContainer(containerId, parentContainerId) {
+    addContainerWithClass(containerId, parentContainerId, "rally-main-container");
+  }
+  function addContainerWithClass(containerId, parentContainerId, className) {
+    const parentContainer = document.getElementById(parentContainerId);
+    if (!parentContainer) {
+      console.error(`Parent container with ID "${parentContainerId}" not found.`);
+      return;
+    }
+    let controlsContainer = document.getElementById(containerId);
+    if (!controlsContainer) {
+      controlsContainer = document.createElement("div");
+      controlsContainer.id = containerId;
+      controlsContainer.className = className;
+      parentContainer.append(controlsContainer);
+    }
+  }
+
+  // recent-activity/widget.js
+  var FETCH_FIELDS = "Artifact,Project,Name,FormattedID,CreationDate,Text,User,Disabled,ObjectID,_CreatedAt,_type";
+  var SORT_ORDER = "CreationDate DESC,ObjectID DESC";
+  var defaultSettings = {
+    showMoreCount: 10,
+    showArtifactDetail: true,
+    allowReply: true,
+    allowDelete: false,
+    profileImageSize: 50
+  };
+  var currentStore = [];
+  var securityToken = null;
+  var isLoadingMore = false;
+  var hasMoreData = true;
+  window.addEventListener("message", (event) => {
+    if (event.origin !== $RallyContext.Url.origin) return;
+    if (event.data.type === "RALLY_CONTEXT_LOADED") {
+      if ($RallyContext.isEditMode) {
+        let mergedSettings = { ...defaultSettings, ...$RallyContext.Settings };
+        window.RallyContext.updateSettings(mergedSettings);
+      }
+      console.log("$RallyContext", $RallyContext);
+      buildWidget();
+    }
+  });
+  async function buildWidget() {
+    const wrapper = document.getElementById("wrapper");
+    wrapper.innerHTML = "";
+    try {
+      addVisualizationContainer("activity-container", "wrapper");
+      await loadAndDisplayActivity();
+    } catch (error) {
+      console.error("Failed to build widget:", error);
+      wrapper.innerHTML = `<div class="rally-alert rally-alert-error">Error building widget: ${error.message || error}</div>`;
+    }
+  }
+  async function loadAndDisplayActivity() {
+    const container = document.getElementById("activity-container");
+    container.innerHTML = '<div class="loading-message">Loading recent activity...</div>';
+    try {
+      const settings = $RallyContext.Settings || defaultSettings;
+      const pageSize = Number(settings.showMoreCount) || 10;
+      const params = buildQueryParams(pageSize);
+      const results = await loadWsapiData("ConversationPost", params);
+      currentStore = results;
+      hasMoreData = results.length >= pageSize;
+      renderActivityStream();
+    } catch (error) {
+      console.error("Failed to load activity:", error);
+      container.innerHTML = `<div class="rally-alert rally-alert-error">Error loading activity: ${error.message || error}</div>`;
+    }
+  }
+  function buildQueryParams(pageSize, query = null) {
+    return {
+      fetch: FETCH_FIELDS,
+      workspace: $RallyContext.GlobalScope.Workspace._ref,
+      project: $RallyContext.GlobalScope.Project._ref,
+      projectScopeDown: $RallyContext.GlobalScope.ProjectScopeDown,
+      projectScopeUp: $RallyContext.GlobalScope.ProjectScopeUp,
+      order: SORT_ORDER,
+      pagesize: pageSize,
+      ...query && { query }
+    };
+  }
+  function renderActivityStream() {
+    const container = document.getElementById("activity-container");
+    const settings = $RallyContext.Settings || defaultSettings;
+    if (!currentStore || currentStore.length === 0) {
+      container.innerHTML = '<div class="no-data"><p>There is no data</p></div>';
+      return;
+    }
+    const activityItems = currentStore.map((record, index) => {
+      const itemClass = index === 0 ? "first" : "";
+      return renderActivityItem(record, itemClass, settings);
+    }).join("");
+    const loadMoreItem = hasMoreData ? renderLoadMoreItem(settings, isLoadingMore) : "";
+    container.innerHTML = `<ul class="discussion-list">${activityItems}${loadMoreItem}</ul>`;
+    attachEventListeners();
+  }
+  function renderLoadMoreItem(settings, isLoading) {
+    return `
+        <li class="list-item load-more-item last">
+            <div class="load-more-link-container">
+                <a href="#" class="load-more-link" ${isLoading ? 'data-loading="true"' : ""}>
+                    ${isLoading ? "Loading..." : `Load ${settings.showMoreCount} More`}
+                </a>
+            </div>
+        </li>`;
+  }
+  function renderActivityItem(record, itemClass, settings) {
+    if (!record) return "";
+    const artifact = record.Artifact || {};
+    const user = record.User || {};
+    const userName = user._refObjectName || "Unknown User";
+    const userInitial = userName.charAt(0).toUpperCase();
+    const itemData = {
+      createdAt: formatCreatedAt(record.CreationDate),
+      profileUri: getProfileImageUrl(settings.profileImageSize, user._ref),
+      detailLink: createDetailLink(artifact),
+      replyLink: createReplyLink(artifact),
+      projectContext: getProjectContext(artifact),
+      isDeletable: settings.allowDelete && checkIfDeletable(user),
+      userNameClass: user.Disabled ? "inactive" : "",
+      textContent: cleanHtmlText(record.Text || ""),
+      userName,
+      userInitial
+    };
+    return `
+        <li class="list-item ${itemClass}" data-oid="${record.ObjectID}">
+            ${renderArtifactDetail(artifact, settings, itemData.detailLink)}
+            <div class="list-item-info">
+                ${renderUserProfile(settings, itemData.profileUri, userName, userInitial)}
+                ${renderItemDetails(record, artifact, settings, itemData)}
+            </div>
+        </li>
+    `;
+  }
+  function renderArtifactDetail(artifact, settings, detailLink) {
+    if (!settings.showArtifactDetail || !artifact._ref) return "";
+    return `
+        <div class="artifact-detail">
+            ${detailLink} ${escapeHtml(artifact.Name || "")}
+        </div>`;
+  }
+  function renderUserProfile(settings, profileUri, userName, userInitial) {
+    const size = settings.profileImageSize;
+    const fallbackSvg = `data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23ccc%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2240%22 fill=%22%23fff%22%3E${userInitial}%3C/text%3E%3C/svg%3E`;
+    return `
+        <div class="list-item-user" style="width: ${size + 10}px; height: ${size + 10}px;">
+            <img class="profile" 
+                 style="width: ${size}px; height: ${size}px;" 
+                 src="${profileUri}" 
+                 alt="${escapeHtml(userName)}"
+                 onerror="this.src='${fallbackSvg}'"/>
+        </div>`;
+  }
+  function renderItemDetails(record, artifact, settings, itemData) {
+    const deleteIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+    </svg>`;
+    return `
+        <div class="list-item-details" style="padding-left: ${settings.profileImageSize + 20}px;">
+            ${itemData.isDeletable ? `<a href="#" class="delete-comment" data-oid="${record.ObjectID}" title="Delete comment">${deleteIcon}</a>` : ""}
+            <div class="status">
+                <a class="profileLink" href="#" onclick="return false;">
+                    <span class="${itemData.userNameClass}">${escapeHtml(itemData.userName)}</span>
+                </a> 
+                ${itemData.createdAt}${itemData.projectContext}
+            </div>
+            <div class="detail-text">${itemData.textContent}</div>
+            ${settings.allowReply && artifact._ref ? `<div class="reply">${itemData.replyLink}</div>` : ""}
+        </div>`;
+  }
+  async function loadMoreConversations() {
+    if (isLoadingMore || !hasMoreData) {
+      return;
+    }
+    isLoadingMore = true;
+    renderActivityStream();
+    try {
+      const settings = $RallyContext.Settings || defaultSettings;
+      const pageSize = Number(settings.showMoreCount) || 10;
+      const oldestItem = currentStore[currentStore.length - 1];
+      const paginationQuery = buildPaginationQuery(oldestItem.CreationDate, oldestItem.ObjectID);
+      const params = buildQueryParams(pageSize, paginationQuery);
+      const results = await loadWsapiData("ConversationPost", params);
+      if (results && results.length > 0) {
+        currentStore = [...currentStore, ...results];
+        hasMoreData = results.length >= pageSize;
+      } else {
+        hasMoreData = false;
+      }
+      isLoadingMore = false;
+      renderActivityStream();
+    } catch (error) {
+      console.error("Failed to load more conversations:", error);
+      isLoadingMore = false;
+      hasMoreData = false;
+      renderActivityStream();
+      alert(`Failed to load more conversations: ${error.message || error}`);
+    }
+  }
+  function buildPaginationQuery(oldestDate, oldestOID) {
+    return `((CreationDate < "${oldestDate}") OR ((CreationDate = "${oldestDate}") AND (ObjectID < ${oldestOID})))`;
+  }
+  function attachEventListeners() {
+    const loadMoreLink = document.querySelector(".load-more-link");
+    if (loadMoreLink) {
+      loadMoreLink.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await loadMoreConversations();
+      });
+    }
+    const deleteLinks = document.querySelectorAll(".delete-comment");
+    deleteLinks.forEach((link) => {
+      link.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const oid = link.getAttribute("data-oid");
+        await handleDeleteComment(oid);
+      });
+    });
+  }
+  async function handleDeleteComment(objectId) {
+    const record = currentStore.find((r) => r.ObjectID.toString() === objectId.toString());
+    if (!record) {
+      console.error("Record not found for deletion");
+      return;
+    }
+    const isCreator = $RallyContext.User.ObjectID === record.User.ObjectID;
+    const userName = record.User._refObjectName;
+    const confirmTitle = isCreator ? "Are you sure you want to delete your comment?" : `Are you sure you want to delete ${userName}'s comment?`;
+    const textPreview = stripHtmlTags(record.Text).substring(0, 150);
+    const confirmMessage = `${textPreview ? textPreview + "...<br/><br/>" : ""}THERE IS NO UNDO for deleting discussions.`;
+    if (!confirm(`${confirmTitle}
+
+${confirmMessage.replace(/<br\/>/g, "\n")}`)) {
+      return;
+    }
+    try {
+      if (!securityToken) {
+        securityToken = window.parent.envConfig.securityToken;
+      }
+      const ref = record._ref;
+      const type = "conversationpost";
+      const oid = getObjectIDFromRef(ref);
+      const url = `${$RallyContext.Url.origin}/slm/webservice/v2.0/${type}/${oid}?key=${securityToken}`;
+      const response = await fetch(url, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to delete comment: ${response.statusText}`);
+      }
+      currentStore = currentStore.filter((r) => r.ObjectID !== record.ObjectID);
+      renderActivityStream();
+      console.log("Comment deleted successfully");
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert(`Failed to delete comment: ${error.message}`);
+    }
+  }
+  function formatCreatedAt(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = /* @__PURE__ */ new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 6e4);
+    const diffHours = Math.floor(diffMs / 36e5);
+    const diffDays = Math.floor(diffMs / 864e5);
+    if (diffMins < 1) {
+      return "just now";
+    } else if (diffMins < 60) {
+      return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  }
+  function getProfileImageUrl(size, userRef) {
+    if (!userRef) return "";
+    const oid = getObjectIDFromRef(userRef);
+    if (!oid) return "";
+    return `${$RallyContext.Url.origin}/slm/profile/image/${oid}/${size}.sp`;
+  }
+  function createDetailLink(artifact) {
+    if (!artifact || !artifact._ref) return "";
+    const relativeRef = getRelativeRef(artifact._ref);
+    if (!relativeRef) return artifact.FormattedID || "";
+    const detailUrl = `${$RallyContext.Url.href}?detail=${relativeRef}`;
+    return `<a href="${detailUrl}" target="_blank" rel="noopener noreferrer" class="artifact-link">${escapeHtml(artifact.FormattedID)}</a>`;
+  }
+  function createReplyLink(artifact) {
+    if (!artifact || !artifact._ref) return "";
+    const relativeRef = getRelativeRef(artifact._ref);
+    if (!relativeRef) return "";
+    const detailUrl = `${$RallyContext.Url.href}?detail=${relativeRef}/discussion`;
+    return `<a href="${detailUrl}" target="_blank" rel="noopener noreferrer" class="reply-link">Reply</a>`;
+  }
+  function getProjectContext(artifact) {
+    if (!artifact || !artifact.Project) return "";
+    const maxProjects = $RallyContext.Subscription?.MaximumProjects;
+    if (maxProjects === 1) return "";
+    return ` in ${escapeHtml(artifact.Project._refObjectName)}`;
+  }
+  function checkIfDeletable(commentUser) {
+    if (!commentUser || !commentUser._ref) return false;
+    const commentUserOid = getObjectIDFromRef(commentUser._ref);
+    const currentUserOid = $RallyContext.User.ObjectID;
+    if (currentUserOid && commentUserOid && currentUserOid.toString() === commentUserOid.toString()) {
+      return true;
+    }
+    const permissions = $RallyContext.User.SubscriptionPermission;
+    if (permissions === "Subscription Admin" || permissions === "Workspace Admin") {
+      return true;
+    }
+    return false;
+  }
+  function cleanHtmlText(html) {
+    if (!html) return "";
+    const hasOrphanedLi = /<li[^>]*>/.test(html) && !/<ul[^>]*>/.test(html) && !/<ol[^>]*>/.test(html);
+    if (hasOrphanedLi) {
+      html = "<ul>" + html + "</ul>";
+    }
+    return html;
+  }
+  function stripHtmlTags(html) {
+    if (!html) return "";
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  }
+  function escapeHtml(text) {
+    if (!text) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+})();
+
+</script>
+</body>
+
+</html>
