@@ -20,7 +20,7 @@ Read the skill at @rally-widgets/resources/ai-rally-app-deconstructor.md and fol
 ### Provide a folder with multiple files
 
 ```
-Read the skill at skills/ai-rally-app-deconstructor.md and follow it exactly.
+Read the skill at rally-widgets/resources/ai-rally-app-deconstructor.md and follow it exactly.
 
 The old app folder is at: /path/to/my-old-app/
 Please read every .html, .js, and .css file in that folder before analyzing.
@@ -31,7 +31,7 @@ Please read every .html, .js, and .css file in that folder before analyzing.
 ### With output location specified
 
 ```
-Read the skill at skills/ai-rally-app-deconstructor.md and follow it exactly.
+Read the skill at rally-widgets/resources/ai-rally-app-deconstructor.md and follow it exactly.
 
 The old app folder is at: /path/to/my-old-app/
 Save the blueprint.md output to: /path/to/my-old-app/blueprint.md
@@ -70,7 +70,7 @@ Output the widget project to: /path/to/my-new-widget/
 ### Provide a blueprint file and specify the closest analog
 
 ```
-Read the skill at skills/ai-rally-widget-builder.md and follow it exactly.
+Read the skill at rally-widgets/resources/ai-rally-widget-builder.md and follow it exactly.
 
 The blueprint is at: /path/to/my-old-app/blueprint.md
 Output the widget project to: /path/to/my-new-widget/
@@ -82,7 +82,7 @@ The closest endorsed widget analog is: pi-cycle-time-chart
 ### Paste the blueprint directly
 
 ```
-Read the skill at skills/ai-rally-widget-builder.md and follow it exactly.
+Read the skill at rally-widgets/resources/ai-rally-widget-builder.md and follow it exactly.
 
 Here is the blueprint:
 
@@ -96,7 +96,7 @@ Output the widget project to: /path/to/my-new-widget/
 ### Specify single-file deployment output
 
 ```
-Read the skill at skills/ai-rally-widget-builder.md and follow it exactly.
+Read the skill at rally-widgets/resources/ai-rally-widget-builder.md and follow it exactly.
 
 The blueprint is at: /path/to/blueprint.md
 I want the output as a single-file deployment HTML (everything inlined), not a dev environment.
@@ -112,7 +112,7 @@ Run both skills in sequence for a complete conversion in two confirmed steps.
 ### Step 1 — Deconstruct
 
 ```
-Read the skill at skills/ai-rally-app-deconstructor.md and follow it exactly.
+Read the skill at rally-widgets/resources/ai-rally-app-deconstructor.md and follow it exactly.
 
 The old app folder is at: /path/to/my-old-app/
 Save the blueprint to: /path/to/my-old-app/blueprint.md
@@ -123,7 +123,7 @@ Review the blueprint. Correct anything that is inaccurate. Confirm when ready.
 ### Step 2 — Build
 
 ```
-Read the skill at skills/ai-rally-widget-builder.md and follow it exactly.
+Read the skill at rally-widgets/resources/ai-rally-widget-builder.md and follow it exactly.
 
 The blueprint is at: /path/to/my-old-app/blueprint.md
 Output the widget project to: /path/to/my-new-widget/
