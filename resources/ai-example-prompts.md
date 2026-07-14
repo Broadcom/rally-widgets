@@ -12,7 +12,7 @@ The App Deconstructor reads an old Rally SDK/ExtJS Custom HTML app and produces 
 ### Provide a single HTML file
 
 ```
-Read the skill at @rally-widgets/resources/ai-rally-app-deconstructor.md and follow it exactly to create a blueprint for the app @legacy-apps/feature-test-set-coverage.original.html
+Read the skill at @rally-widgets/resources/ai-rally-app-deconstructor.md and follow it exactly to create a blueprint for the app @legacy-apps/my-old-app.html
 ```
 
 ---
