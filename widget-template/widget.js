@@ -26,6 +26,7 @@ window.addEventListener('message', (event) => {
 });
 
 function cleanseSettings(settings){
+    console.log('userSettings',settings);
      let cleansedSettings = settings || {};
   
    //... add code here to clean and validate settings ... 
@@ -42,9 +43,17 @@ function buildWidget() {
         wrapper.innerHTML = getTemplateText();
         
         const pre = document.createElement('pre');
-        pre.style.whiteSpace = 'pre-wrap';
-        pre.style.wordBreak = 'break-all';
-        pre.textContent = JSON.stringify($RallyContext, null, 2);
+        pre.style.whiteSpace = 'pre-wrap'; // Ensure long lines wrap
+        pre.style.wordBreak = 'break-all'; // Break long strings
+        // The Schema field carries the entire workspace schema (every type,
+        // attribute, and allowed value) and can be many MB. Pretty-printing
+        // it into a single <pre> hangs the renderer, so swap it out with a
+        // placeholder while keeping the rest of $RallyContext browsable.
+        pre.textContent = JSON.stringify(
+            $RallyContext,
+            (key, value) => (key === 'Schema' ? '... full schema omitted for brevity ...' : value),
+            2
+        );
 
         wrapper.appendChild(pre);
         //End Example Code
@@ -56,17 +65,24 @@ function buildWidget() {
         }
    }
 }
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
  function getTemplateText () {
        let textContent = "<h2>Custom HTML Widget Context Information</h2>"
         textContent += "<p>The <b>$RallyContext</b> object provides important context about the following:</p>";
-        textContent += "<li>GlobalScope: Workspace, Project, and ProjectScoping for the current widget configuration.  The current project is <b>" + $RallyContext.GlobalScope.Project.Name + "</b>";
+        textContent += "<li>GlobalScope: Workspace, Project, and ProjectScoping for the current widget configuration.  The current project is <b>" + escapeHtml($RallyContext.GlobalScope.Project.Name) + "</b>";
         textContent += "<li>Schema: The schema for the current workspace, including object types, attributes and meta data";
-        textContent += `<li>Settings: The user provided settings via the Settings configuration in the UI or the updateSettings method in Edit Mode. The current settings are <b>${JSON.stringify($RallyContext.Settings)}</b>`;
+        textContent += `<li>Settings: The user provided settings via the Settings configuration in the UI or the updateSettings method in Edit Mode. The current settings are <b>${escapeHtml(JSON.stringify($RallyContext.Settings))}</b>`;
         textContent += "<li>Subscription: Metadata about the current subscription, subject to the users' permissions";
-        textContent += "<li>Url: Metadata about the url of the current page, including the query parameters. The query string for the current page is:  <b>" + ($RallyContext.Url.hashQueryString ? $RallyContext.Url.hashQueryString : "null") + "</b>";
-        textContent += `<li>User: Metadata about the current user.  The current UserName is <b>${$RallyContext.User.UserName}</b>`;
-        textContent += `<li>ViewFilter: The type and value of the currently selected view filter.  If none, the Type = null and the Value = {}.  The current ViewFilter type is <b>${$RallyContext.ViewFilter.Type}</b>`;   
-        textContent += `<li>WidgetName: <b>${$RallyContext.WidgetName}</b>`
+        textContent += "<li>Url: Metadata about the url of the current page, including the query parameters. The query string for the current page is:  <b>" + ($RallyContext.Url.hashQueryString ? escapeHtml($RallyContext.Url.hashQueryString) : "null") + "</b>";
+        textContent += `<li>User: Metadata about the current user.  The current UserName is <b>${escapeHtml($RallyContext.User.UserName)}</b>`;
+        textContent += `<li>ViewFilter: The type and value of the currently selected view filter.  If none, the Type = null and the Value = {}.  The current ViewFilter type is <b>${escapeHtml($RallyContext.ViewFilter.Type)}</b>`;
+        textContent += `<li>WidgetName: <b>${escapeHtml($RallyContext.WidgetName)}</b>`
         textContent += "<li>isEditMode: Whether or not the current widget is on a page in Edit Mode or View Mode.  Currently this widget is in " + ($RallyContext.isEditMode ? "<b>Edit Mode</b>" : "<b>View Mode</b>");
         textContent += "<br/><br/>Read more about the $RallyContext object and Custom HTML Widget <a href='https://techdocs.broadcom.com/us/en/ca-enterprise-software/valueops/rally/rally-help/reference/rally-widgets/custom-hmtl-widget.html' target='_blank'>here</a> or explore the contents of the current $RallyContext object by scrolling down below.<br/><br/>"
         return textContent;
