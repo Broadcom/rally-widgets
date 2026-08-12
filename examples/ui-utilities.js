@@ -1,4 +1,55 @@
    import { getRelativeRef } from './utility.js';
+   import DOMPurify from 'dompurify';
+
+   /**
+    * HTML-encodes a value so it can be safely interpolated into an HTML
+    * string that will later be assigned to innerHTML (or wrapped in
+    * gridjs.html()). Uses a textContent round-trip so the browser does
+    * the encoding rather than a hand-rolled character map.
+    *
+    * Returns '' for null/undefined; coerces other inputs to String so
+    * numbers and the string "0" round-trip correctly.
+    *
+    * @param {*} text
+    * @returns {string}
+    */
+   export function escapeHtml(text) {
+       if (text == null) return '';
+       const div = document.createElement('div');
+       div.textContent = String(text);
+       return div.innerHTML;
+   }
+
+   export function sanitizeRichHtml(html) {
+       if (!html) return '';
+       return DOMPurify.sanitize(html);
+   }
+
+   /**
+    * Appends a sequence of <td> cells to a table row. Each entry in
+    * `contentArray` is rendered as text by default (via textContent),
+    * which is safe for arbitrary user-controlled strings. To render a
+    * cell as trusted HTML markup (links, progress bars, etc.), pass
+    * an object of the form `{ html: '...' }`.
+    *
+    * Examples:
+    *   createAndPopulateTableRow(tr, [user.Name, user.Email]);
+    *   createAndPopulateTableRow(tr, [{ html: linkMarkup }, user.Name]);
+    *
+    * @param {HTMLTableRowElement} tableRow
+    * @param {Array<*>} contentArray
+    */
+   export function createAndPopulateTableRow(tableRow, contentArray) {
+       contentArray.forEach((content) => {
+           const cell = document.createElement('td');
+           if (content != null && typeof content === 'object' && 'html' in content) {
+               cell.innerHTML = content.html;
+           } else {
+               cell.textContent = content == null ? '' : String(content);
+           }
+           tableRow.appendChild(cell);
+       });
+   }
 
    /**
     * Creates a dropdown with custom styling using pure JavaScript.
@@ -167,6 +218,8 @@
     * @param {Array<object>} items - The array of artifact objects to display.
     */
    export function showDetailsModal(title, items, columns) {
+    console.log('showDetailsModeal', title, items)
+       // --- Create Modal DOM Elements ---
        const overlay = document.createElement('div');
        overlay.className = 'modal-overlay';
        overlay.id = 'details-modal-overlay';
@@ -188,8 +241,39 @@
        const modalBody = document.createElement('div');
        modalBody.className = 'modal-body';
 
+       // --- Create Table ---
        const table = createItemTable(items, 'modal-table', columns);
        modalBody.appendChild(table)
+    //    const table = document.createElement('table');
+    //    table.className = 'modal-table';
+
+    //    const thead = table.createTHead();
+    //    const headerRow = thead.insertRow();
+    //    const headers = ['ID', 'Name', 'Plan Estimate'];
+    //    headers.forEach(headerText => {
+    //        const th = document.createElement('th');
+    //        th.textContent = headerText;
+    //        headerRow.appendChild(th);
+    //    });
+
+    //    const tbody = table.createTBody();
+    //    items.forEach(item => {
+    //        const row = tbody.insertRow();
+    //        columns.forEach(column => {
+    //            const cell = row.insertCell();
+    //            cell.textContent = item[column] || 'N/A';
+    //            if (column === 'FormattedID'){
+    //             cell.innerHTML =  applyFormattedIDTemplate(item);
+    //            } else {
+    //             cell.textContent =item[column] || 'N/A';
+    //            }
+    //        });
+    //     //    row.insertCell().textContent = item.FormattedID || 'N/A';
+    //     //    row.insertCell().textContent = item.Name || 'N/A';
+    //     //    row.insertCell().textContent = item.PlanEstimate || 0;
+    //    });
+
+       // --- Assemble and Append ---
        modalHeader.appendChild(modalTitle);
        modalHeader.appendChild(closeButton);
        modalBody.appendChild(table);
@@ -221,6 +305,7 @@
 
        const thead = table.createTHead();
        const headerRow = thead.insertRow();
+       //const headers = ['ID', 'Name', 'Plan Estimate'];
        if (!headers){ headers = columns}
        headers.forEach(headerText => {
            const th = document.createElement('th');
@@ -258,14 +343,14 @@
 export function getTemplateText () {
        let textContent = "<h2>Custom HTML Widget Context Information</h2>"
         textContent += "<p>The <b>$RallyContext</b> object provides important context about the following:</p>";
-        textContent += "<li>GlobalScope: Workspace, Project, and ProjectScoping for the current widget configuration.  The current project is <b>" + $RallyContext.GlobalScope.Project.Name + "</b>";
+        textContent += "<li>GlobalScope: Workspace, Project, and ProjectScoping for the current widget configuration.  The current project is <b>" + escapeHtml($RallyContext.GlobalScope.Project.Name) + "</b>";
         textContent += "<li>Schema: The schema for the current workspace, including object types, attributes and meta data";
-        textContent += `<li>Settings: The user provided settings via the Settings configuration in the UI or the updateSettings method in Edit Mode. The current settings are <b>${JSON.stringify($RallyContext.Settings)}</b>`;
+        textContent += `<li>Settings: The user provided settings via the Settings configuration in the UI or the updateSettings method in Edit Mode. The current settings are <b>${escapeHtml(JSON.stringify($RallyContext.Settings))}</b>`;
         textContent += "<li>Subscription: Metadata about the current subscription, subject to the users' permissions";
-        textContent += "<li>Url: Metadata about the url of the current page, including the query parameters. The query string for the current page is:  <b>" + ($RallyContext.Url.hashQueryString ? $RallyContext.Url.hashQueryString : "null") + "</b>";
-        textContent += `<li>User: Metadata about the current user.  The current UserName is <b>${$RallyContext.User.UserName}</b>`;
-        textContent += `<li>ViewFilter: The type and value of the currently selected view filter.  If none, the Type = null and the Value = {}.  The current ViewFilter type is <b>${$RallyContext.ViewFilter.Type}</b>`;   
-        textContent += `<li>WidgetName: <b>${$RallyContext.WidgetName}</b>`
+        textContent += "<li>Url: Metadata about the url of the current page, including the query parameters. The query string for the current page is:  <b>" + ($RallyContext.Url.hashQueryString ? escapeHtml($RallyContext.Url.hashQueryString) : "null") + "</b>";
+        textContent += `<li>User: Metadata about the current user.  The current UserName is <b>${escapeHtml($RallyContext.User.UserName)}</b>`;
+        textContent += `<li>ViewFilter: The type and value of the currently selected view filter.  If none, the Type = null and the Value = {}.  The current ViewFilter type is <b>${escapeHtml($RallyContext.ViewFilter.Type)}</b>`;
+        textContent += `<li>WidgetName: <b>${escapeHtml($RallyContext.WidgetName)}</b>`
         textContent += "<li>isEditMode: Whether or not the current widget is on a page in Edit Mode or View Mode.  Currently this widget is in " + ($RallyContext.isEditMode ? "<b>Edit Mode</b>" : "<b>View Mode</b>");
         textContent += "<br/><br/>Read more about the $RallyContext object and Custom HTML Widget <a href='https://techdocs.broadcom.com/us/en/ca-enterprise-software/valueops/rally/rally-help/reference/rally-widgets/custom-hmtl-widget.html' target='_blank'>here</a> or explore the contents of the current $RallyContext object by scrolling down below.<br/><br/>"
         return textContent;
