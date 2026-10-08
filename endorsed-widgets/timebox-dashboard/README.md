@@ -8,7 +8,7 @@
   - Accepted Progress Bar: Shows the percentage of accepted work, with a marker indicating how far along you are in the timebox
   - Schedule State Chart: A breakdown of work items (Stories, Defects, Defect Suites) by their current Schedule State
   - Defect State Chart: Displays a breakdown of defects scheduled in the timebox by State 
-  - Test Case Last Verdict Chart:  Summarizes the results (Pass, Fail, etc.) for all test cases associated with user stories in the timebox
+  - Test Case Last Verdict Chart:  Summarizes the results (Pass, Fail, etc.) for all test cases in the timebox, whether linked to a user story or defect scheduled in it, or part of a test set scheduled in it; test cases that have never been run are shown as Not Run
   - Burndown Chart: Tracks remaining plan estimates day-by-day against an ideal trend line
 - Data is rolled up to the parent project row if child projects is enabled in your project scope
 - The Schedule State and Defect State charts include defects that are linked to scheduled user stories, even if the defects themselves are not scheduled in this timebox
