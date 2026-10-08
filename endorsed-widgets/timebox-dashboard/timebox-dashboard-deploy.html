@@ -1,7 +1,7 @@
 <!--
   Build Version: N/A
-  Build Date: 2026-09-15T14:49:39.722Z
-  Checksum (md5): 57ab9384127fbb7f95c7c082f05618e5
+  Build Date: 2026-10-07T20:22:06.265Z
+  Checksum (md5): 1270e139395d42d20d94cb00d9949936
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -1481,7 +1481,7 @@ body {
     });
   };
   var fetchTestCaseItems = async () => {
-    const testCaseQuery = buildTimeboxQuery("WorkProduct");
+    const testCaseQuery = `(${buildTimeboxQuery("WorkProduct")} OR ${buildTimeboxQuery("TestSets")})`;
     const testCaseFetchFields = "LastVerdict,Project,_refObjectUUID,Name,FormattedID,WorkProduct";
     const testCaseFetchUrl = `${$RallyContext.Url.origin}/slm/webservice/v2.x/TestCase?${scoping}&fetch=${testCaseFetchFields}&query=${testCaseQuery}&pagesize=2000&order=LastVerdict%20ASC`;
     return pagedFetchAndConcatData(testCaseFetchUrl).then((dataResults) => {
@@ -1560,13 +1560,19 @@ body {
     }
     return daysTotal;
   };
+  var incrementLastVerdict = (projectUUID, lastVerdict) => {
+    const { lastVerdicts } = projects[projectUUID];
+    lastVerdicts[lastVerdict] = (lastVerdicts[lastVerdict] ?? 0) + 1;
+  };
+  var NOT_RUN = "Not Run";
   var transformTestCaseData = (testCases) => {
-    testCases.forEach((testCase) => {
+    const uniqueTestCases = [...new Map(testCases.map((testCase) => [testCase._refObjectUUID, testCase])).values()];
+    uniqueTestCases.forEach((testCase) => {
       addEmptyProjectObject(testCase.Project);
-      const lastVerdict = projects[testCase.Project._refObjectUUID].lastVerdicts[testCase.LastVerdict];
-      projects[testCase.Project._refObjectUUID].lastVerdicts[testCase.LastVerdict] = lastVerdict ? lastVerdict + 1 : 1;
+      const lastVerdict = testCase.LastVerdict || NOT_RUN;
+      incrementLastVerdict(testCase.Project._refObjectUUID, lastVerdict);
       if (testCase.Project._refObjectUUID !== $RallyContext.GlobalScope.Project._refObjectUUID) {
-        projects[$RallyContext.GlobalScope.Project._refObjectUUID].lastVerdicts[testCase.LastVerdict] = lastVerdict ? lastVerdict + 1 : 1;
+        incrementLastVerdict($RallyContext.GlobalScope.Project._refObjectUUID, lastVerdict);
       }
     });
   };
@@ -1619,7 +1625,7 @@ body {
     </div>
     <div class="progressBarDetails">${num1}/${num2}</div>`;
   };
-  var aggregatePieDataSeries = (projectUUID, chartObject, orderArray) => {
+  var aggregatePieDataSeries = (projectUUID, chartObject, orderArray, colorOverrides = {}) => {
     const dataSeries = [];
     const totalCount = getSumOfObjectValues(projects[projectUUID][chartObject]);
     orderArray.forEach((allowedValue, i) => {
@@ -1627,7 +1633,7 @@ body {
       if (projects[projectUUID][chartObject][allowedValue]) {
         dataSeries.push({
           name: allowedValue,
-          color: orderedChartColors[i],
+          color: colorOverrides[allowedValue] ?? orderedChartColors[i],
           count,
           totalCount,
           y: Math.round(count / totalCount * 100)
@@ -1841,7 +1847,7 @@ body {
         renderPieChart(aggregatePieDataSeries(projectUUID, "defectStates", defectStates), `project${projectUUID}-defectStates`, "defects");
       }
       if (!disableTestCasesCharts) {
-        renderPieChart(aggregatePieDataSeries(projectUUID, "lastVerdicts", lastVerdicts), `project${projectUUID}-lastVerdicts`, "test cases");
+        renderPieChart(aggregatePieDataSeries(projectUUID, "lastVerdicts", [...lastVerdicts, NOT_RUN], { [NOT_RUN]: notRunColor }), `project${projectUUID}-lastVerdicts`, "test cases");
       }
       renderBurndownChart(aggregateBurndownDataSeries(projectUUID, project.burndownSeries), project.burndownSeriesHigh, `project${projectUUID}-burndown`);
     });
@@ -1854,6 +1860,7 @@ body {
   var scoping = "";
   var disableDefectsCharts;
   var disableTestCasesCharts;
+  var notRunColor = "#968c7b";
   var orderedChartColors = [
     "#188f85",
     //paletteTealGreen500,
