@@ -78,6 +78,46 @@
             transition: border-color 0.2s ease-in-out;
         }
 
+        /* Single-line text input styled to match the dropdowns */
+        .rally-like-input {
+            flex-grow: 1;
+            min-width: 250px;
+            height: 32px;
+            box-sizing: border-box;
+            padding: 6px 8px;
+            border: 1px solid #b2b2b2;
+            border-radius: 0;
+            background-color: transparent;
+            color: #434A54;
+            font-size: 12px;
+            font-weight: 400;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        /* Wide variant for multi-line inputs such as queries */
+        .rally-like-field-container-wide {
+            align-items: flex-start;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .rally-like-field-container-wide .rally-like-label {
+            padding-top: 8px;
+        }
+
+        .rally-like-textarea {
+            height: auto;
+            min-height: 64px;
+            resize: vertical;
+            font-family: Consolas, Menlo, monospace;
+            line-height: 1.4;
+        }
+
+        .rally-like-input:focus {
+            outline: none;
+            border-color: #77b9e4;
+        }
+
         /* Change border color on focus, similar to Rally */
         .rally-like-select:focus {
             outline: none;

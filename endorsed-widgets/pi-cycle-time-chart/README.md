@@ -5,6 +5,8 @@ This app plots the cycle time of portfolio items. This metric is calculated as t
 
 The app can be configured for any level of the portfolio item hierarchy and the x-axis granularity is configurable as well. This app includes the standard filtering component to enable further slicing and dicing of data.
 
+Hover over a bar to see the bucket, the median cycle time (in days), the number of items included in the calculation, and the P25 - P75 range. Click a bar to open a drilldown listing the items in that bucket: Formatted ID (a link to the item's detail page, opened in a new tab), Name, Project, Actual Start Date, Actual End Date and Cycle Time (Days). Click a column header to sort by that column (click again to reverse the order); sorting happens in the browser and works with the keyboard. Items with an empty value in the sorted column always appear last. Close the drilldown with the close button, the Escape key, or by clicking outside it.
+
 ![alt text](screenshot.jpg)
 
 ## Usage
@@ -14,6 +16,14 @@ Navigation Scope *This widget will follow the navigation scope in Rally, includi
 View Filter Compatible: No *This widget does not respect timebox View Filters in a Custom View, primarily because the settings dictate the scope of the data.*  
 
 ## Caveats and Assumptions 
+Only portfolio items that have both an ActualStartDate and an ActualEndDate are included in the cycle time calculation, the item count in the tooltip, and the drilldown. Items missing either date are not counted.  
+
+The drilldown lists every item in the bucket without paging, so a bucket with many items (up to the 2000 item limit below) produces a long, scrollable list.  
+
+Dates and numbers in the drilldown are shown in the browser's locale. Cycle time is the whole number of days between the start and end dates, the same calculation used for the chart.  
+
+The widget loads Highcharts, including its accessibility module (used for keyboard navigation of the chart), from code.highcharts.com, so that host must be reachable from the user's browser.  
+
 The portfolio items that are fetched to build this chart are limited to 2000 items.  If more than 2000 items need to be fetched to build the chart, then you will see a message indicating that you should refine your criteria or scope.  
 
 ## Settings 
@@ -45,6 +55,7 @@ Options include:
 For example, if ```bucketBy = Month``` and ```numBuckets = 10```, the chart will show cycletime data for the last 10 months.  
 
 #### query (optional)
+* In edit mode, enter the query in the **Query** box (a resizable, multi-line box, so long queries are easy to read) and press Ctrl+Enter / Cmd+Enter (or click outside the box) to apply it. Line breaks are converted to spaces. If the query is invalid, an error message is shown below the settings so you can correct it.
 * To further refine the dataset for more complex criteria, add a valid WSAPI query for Portfolio Items to this setting.  The default is empty.  Note that the query must have the proper syntax and balanced parenthesis.  Please see the [Build Queries topic in the Rally documentation](https://techdocs.broadcom.com/us/en/ca-enterprise-software/valueops/rally/rally-help/reference/build-queries.html) for how to write WSAPI queries.  
 
 ## Support

@@ -184,6 +184,73 @@
             }
         }
 
+        /**
+         * Creates a labelled single-line text input styled like the dropdowns. The value is set through
+         * the DOM (never interpolated into markup). onChange fires on blur or Enter with the trimmed value.
+         *
+         * @param {object} config
+         * @param {string} config.renderTo - ID of the element to render into.
+         * @param {string} [config.id] - ID for the field container; an existing element with this ID is replaced.
+         * @param {string} [config.fieldLabel] - Label text.
+         * @param {string} [config.value] - Initial value.
+         * @param {string} [config.placeholder] - Placeholder text.
+         * @param {number} [config.rows] - When set, renders a resizable multi-line textarea with this many rows
+         *                                 (Ctrl/Cmd+Enter commits; line breaks are collapsed to spaces).
+         * @param {Function} [config.onChange] - Called with the trimmed value when the user commits a change.
+         */
+        export function createStyledTextInput(config) {
+            const renderTarget = document.getElementById(config.renderTo);
+            if (!renderTarget) {
+                console.error(`Render target with ID "${config.renderTo}" not found.`);
+                return;
+            }
+            if (config.id) {
+                document.getElementById(config.id)?.remove();
+            }
+
+            const container = document.createElement('div');
+            container.className = 'rally-like-field-container';
+            if (config.id) { container.id = config.id; }
+
+            const multiline = Number(config.rows) > 0;
+            const input = document.createElement(multiline ? 'textarea' : 'input');
+            if (multiline) {
+                input.rows = Number(config.rows);
+                container.classList.add('rally-like-field-container-wide');
+            } else {
+                input.type = 'text';
+            }
+            input.className = multiline ? 'rally-like-input rally-like-textarea' : 'rally-like-input';
+            input.id = `styled-text-input-${config.id || Date.now()}`;
+            input.value = config.value ?? '';
+            if (config.placeholder) { input.placeholder = config.placeholder; }
+
+            const label = document.createElement('label');
+            label.className = 'rally-like-label';
+            label.textContent = config.fieldLabel || '';
+            label.htmlFor = input.id;
+
+            const normalize = (text) => (multiline ? text.replace(/\s*[\r\n]+\s*/g, ' ') : text).trim();
+            let committedValue = normalize(input.value);
+            const commit = () => {
+                const newValue = normalize(input.value);
+                if (newValue === committedValue) return;
+                committedValue = newValue;
+                if (typeof config.onChange === 'function') {
+                    config.onChange(newValue);
+                }
+            };
+            input.addEventListener('change', commit);
+            input.addEventListener('keydown', (event) => {
+                if (event.key !== 'Enter') return;
+                // In a textarea plain Enter inserts a line break, so require Ctrl/Cmd
+                if (!multiline || event.ctrlKey || event.metaKey) commit();
+            });
+
+            container.append(label, input);
+            renderTarget.appendChild(container);
+        }
+
         export function addHorizontalControlsContainer(containerId,parentContainerId){
             addContainerWithClass(containerId,parentContainerId,'rally-like-controls-container');
         }
