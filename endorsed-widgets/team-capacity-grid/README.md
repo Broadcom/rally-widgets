@@ -32,5 +32,6 @@ Team Capacity Grid (App SDK version)
 None.
 
 ## Reviewer Notes
-- The save posts `{"useriterationcapacity": {"Capacity": <value>}}` to `/slm/webservice/v2.0/useriterationcapacity/<ObjectID>` using the shared `updateWsapiObject` helper, which lowercases the type from the `_ref`. Confirm a save succeeds in a real workspace.
-- Load is read as a fraction (0.8 = 80%), matching the thresholds in the old app.
+- Saving and clearing Capacity were verified against a testn instance: `{"useriterationcapacity": {"Capacity": <value or null>}}` posted with a security token succeeds.
+- Load is a fraction (0.8 = 80%), matching the thresholds in the old app.
+- The iteration is matched by ObjectID from the view filter, falling back to its name if no ObjectID is present.

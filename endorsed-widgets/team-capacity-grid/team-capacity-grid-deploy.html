@@ -158,6 +158,15 @@ body {
     margin: 4px 0;
 }
 
+.tcg-visually-hidden {
+    clip: rect(0 0 0 0);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
 .tcg-message {
     background: #eef4fc;
     border: 1px solid #bcd4f3;
@@ -306,6 +315,10 @@ body {
     return div.innerHTML;
   }
 
+  function escapeAttribute(text) {
+    return escapeHtml(text).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
   // team-capacity-grid/widget.js
   const PAGE_SIZE = 25;
   const FETCH_FIELDS = 'User,Capacity,TaskEstimates,Load';
@@ -313,6 +326,7 @@ body {
   const FULL_LOAD_LIMIT = 1;
 
   let startIndex = 1;
+  let loadedStartIndex = 1;
   let totalResultCount = 0;
   let records = [];
   let loadRequestId = 0;
@@ -322,8 +336,10 @@ body {
       if (event.origin !== $RallyContext.Url.origin) {
         return;
       }
-      if (event.data.type === "RALLY_CONTEXT_LOADED") {
+      if (event.data?.type === "RALLY_CONTEXT_LOADED") {
         startIndex = 1;
+        loadedStartIndex = 1;
+        loadRequestId++;
         if ($RallyContext.isEditMode) {
           renderMessage("Team Capacity Grid has no settings. Exit edit mode to view the grid.");
         } else {
@@ -334,12 +350,16 @@ body {
     });
   };
 
-  const getIterationObjectID = () => {
+  const getIterationQuery = () => {
     const viewFilter = $RallyContext.ViewFilter;
     if (!viewFilter || viewFilter.Type !== "Iteration" || !viewFilter.Value) {
       return null;
     }
-    return getObjectIDFromRef(viewFilter.Value._ref);
+    const objectID = getObjectIDFromRef(viewFilter.Value._ref);
+    if (objectID) {
+      return `(Iteration.ObjectID = ${objectID})`;
+    }
+    return viewFilter.Value.Name ? `(Iteration.Name = "${viewFilter.Value.Name.replace(/"/g, '\\"')}")` : null;
   };
 
   const renderMessage = (message, isError = false) => {
@@ -366,23 +386,41 @@ body {
     }
   };
 
+  const restoreFocus = (controlId) => {
+    const control = ["tcg-refresh", "tcg-prev", "tcg-next"].includes(controlId) && document.getElementById(controlId);
+    if (control && !control.disabled) {
+      control.focus();
+    }
+  };
+
+  const setControlsDisabled = (isDisabled) => {
+    document.querySelectorAll("#tcg-refresh, #tcg-prev, #tcg-next").forEach((button) => {
+      button.disabled = isDisabled;
+    });
+  };
+
   const loadPage = async () => {
-    const iterationObjectID = getIterationObjectID();
-    if (!iterationObjectID) {
+    const requestId = ++loadRequestId;
+    const iterationQuery = getIterationQuery();
+    if (!iterationQuery) {
       renderMessage("You must specify a valid Iteration/Sprint. Unscheduled is not supported.");
       return;
     }
-    const requestId = ++loadRequestId;
+    if (!document.getElementById("tcg-grid")) {
+      renderGridShell();
+    }
     const grid = document.getElementById("tcg-grid");
+    const focusedControlId = document.activeElement && document.activeElement.id;
     grid.setAttribute("aria-busy", "true");
-    setStatus("");
+    setControlsDisabled(true);
+    setStatus("Loading...");
     const params = {
       workspace: $RallyContext.GlobalScope.Workspace._ref,
       project: $RallyContext.GlobalScope.Project._ref,
       projectScopeUp: $RallyContext.GlobalScope.ProjectScopeUp,
       projectScopeDown: $RallyContext.GlobalScope.ProjectScopeDown,
       fetch: FETCH_FIELDS,
-      query: encodeURIComponent(`(Iteration.ObjectID = ${iterationObjectID})`),
+      query: encodeURIComponent(iterationQuery),
       order: "User",
       pagesize: PAGE_SIZE,
       start: startIndex
@@ -396,15 +434,23 @@ body {
       if (!queryResult || (queryResult.Errors && queryResult.Errors.length > 0)) {
         throw new Error(queryResult ? queryResult.Errors.join(", ") : "No response from Rally");
       }
+      loadedStartIndex = startIndex;
       records = queryResult.Results;
       totalResultCount = queryResult.TotalResultCount;
+      setStatus("");
       renderGrid();
+      restoreFocus(focusedControlId);
     } catch (error) {
       if (requestId !== loadRequestId) {
         return;
       }
       console.error("Failed to load team capacity:", error);
-      renderMessage("Unable to load team capacity. Please try refreshing.", true);
+      startIndex = loadedStartIndex;
+      grid.setAttribute("aria-busy", "false");
+      setStatus("Unable to load team capacity. Please try again.");
+      setControlsDisabled(false);
+      renderFooter();
+      restoreFocus(focusedControlId);
     }
   };
 
@@ -416,12 +462,12 @@ body {
 
   const loadTemplate = (record) => {
     if (record.Load == null) {
-      return '<span aria-label="No load">&mdash;</span>';
+      return '<span aria-hidden="true">&mdash;</span><span class="tcg-visually-hidden">No load</span>';
     }
     const percent = Math.round(record.Load * 100);
     const barWidth = Math.min(percent, 100);
     return `<div class="tcg-load">
-      <div class="tcg-load-track" role="progressbar" aria-label="Load" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(percent, 100)}" aria-valuetext="${percent}%">
+      <div class="tcg-load-track" role="progressbar" aria-label="Load" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${barWidth}" aria-valuetext="${percent}%">
         <div class="tcg-load-fill ${getLoadClass(record.Load)}" style="width: ${barWidth}%"></div>
       </div>
       <span class="tcg-load-label">${percent}%</span>
@@ -433,7 +479,7 @@ body {
     const capacity = record.Capacity == null ? "" : record.Capacity;
     return `<tr data-index="${index}">
       <td>${escapeHtml(userName)}</td>
-      <td><input type="number" min="0" step="any" class="tcg-capacity-input" value="${escapeHtml(capacity)}" aria-label="Capacity for ${escapeHtml(userName)}"></td>
+      <td><input type="number" min="0" step="any" class="tcg-capacity-input" value="${escapeAttribute(capacity)}" aria-label="Capacity for ${escapeAttribute(userName)}"></td>
       <td class="tcg-task-estimates">${escapeHtml(record.TaskEstimates)}</td>
       <td class="tcg-load-cell">${loadTemplate(record)}</td>
     </tr>`;
@@ -466,10 +512,13 @@ body {
   const renderFooter = () => {
     const footer = document.getElementById("tcg-footer");
     const firstShown = records.length === 0 ? 0 : startIndex;
-    const lastShown = startIndex + records.length - 1;
-    footer.innerHTML = `<span class="tcg-range" aria-live="polite">${firstShown}-${Math.max(lastShown, 0)} of ${totalResultCount}</span>
+    const lastShown = records.length === 0 ? 0 : startIndex + records.length - 1;
+    footer.innerHTML = `<span class="tcg-range" aria-live="polite">${firstShown}-${lastShown} of ${totalResultCount}</span>
       <button type="button" class="tcg-button" id="tcg-prev" ${startIndex <= 1 ? "disabled" : ""}>Previous</button>
       <button type="button" class="tcg-button" id="tcg-next" ${startIndex + PAGE_SIZE > totalResultCount ? "disabled" : ""}>Next</button>`;
+    setControlsDisabled(false);
+    document.getElementById("tcg-prev").disabled = startIndex <= 1;
+    document.getElementById("tcg-next").disabled = startIndex + PAGE_SIZE > totalResultCount;
     document.getElementById("tcg-prev").addEventListener("click", () => {
       startIndex = Math.max(1, startIndex - PAGE_SIZE);
       loadPage();
@@ -496,20 +545,33 @@ body {
     }
     input.classList.remove("is-invalid");
     setStatus("");
-    input.disabled = true;
+    input.readOnly = true;
+    input.setAttribute("aria-busy", "true");
     try {
       await updateWsapiObject(record._ref, { Capacity: newCapacity }, getSecurityToken());
+    } catch (error) {
+      console.error("Failed to save capacity:", error);
+      input.value = previousCapacity;
+      setStatus("Unable to save capacity. The previous value was restored.");
+      input.readOnly = false;
+      input.removeAttribute("aria-busy");
+      return;
+    }
+    try {
       const updated = await fetchWsapiObject(record._ref, FETCH_FIELDS.split(","));
+      if (!row.isConnected || records[Number(row.dataset.index)] !== record) {
+        return;
+      }
       records[Number(row.dataset.index)] = { ...record, ...updated, User: record.User };
       row.querySelector(".tcg-task-estimates").textContent = updated.TaskEstimates;
       row.querySelector(".tcg-load-cell").innerHTML = loadTemplate(updated);
       input.value = updated.Capacity == null ? "" : updated.Capacity;
     } catch (error) {
-      console.error("Failed to save capacity:", error);
-      input.value = previousCapacity;
-      setStatus("Unable to save capacity. The previous value was restored.");
+      console.error("Failed to refresh row after saving capacity:", error);
+      setStatus("Capacity was saved, but the row could not be refreshed. Use Refresh to update Task Estimates and Load.");
     } finally {
-      input.disabled = false;
+      input.readOnly = false;
+      input.removeAttribute("aria-busy");
     }
   };
 
