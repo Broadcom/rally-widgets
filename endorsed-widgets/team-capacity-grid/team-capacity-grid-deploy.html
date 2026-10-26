@@ -341,6 +341,11 @@ body {
   let totalResultCount = 0;
   let records = [];
   let loadRequestId = 0;
+  let isUnloading = false;
+
+  window.addEventListener("pagehide", () => {
+    isUnloading = true;
+  });
 
   const main = () => {
     window.addEventListener("message", (event) => {
@@ -452,7 +457,7 @@ body {
       renderGrid();
       restoreFocus(focusedControlId);
     } catch (error) {
-      if (requestId !== loadRequestId) {
+      if (requestId !== loadRequestId || isUnloading) {
         return;
       }
       console.error("Failed to load team capacity:", error);
