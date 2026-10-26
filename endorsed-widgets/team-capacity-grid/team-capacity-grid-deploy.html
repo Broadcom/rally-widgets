@@ -138,12 +138,23 @@ body {
     text-align: right;
 }
 
+#wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 16px);
+}
+
+#tcg-grid {
+    flex: 1;
+}
+
 .tcg-footer {
     align-items: center;
     display: flex;
     gap: 8px;
     justify-content: flex-end;
-    margin-top: 8px;
+    margin-top: auto;
+    padding-top: 8px;
 }
 
 .tcg-range {
@@ -513,10 +524,17 @@ body {
     const footer = document.getElementById("tcg-footer");
     const firstShown = records.length === 0 ? 0 : startIndex;
     const lastShown = records.length === 0 ? 0 : startIndex + records.length - 1;
-    footer.innerHTML = `<span class="tcg-range" aria-live="polite">${firstShown}-${lastShown} of ${totalResultCount}</span>
-      <button type="button" class="tcg-button" id="tcg-prev" ${startIndex <= 1 ? "disabled" : ""}>Previous</button>
-      <button type="button" class="tcg-button" id="tcg-next" ${startIndex + PAGE_SIZE > totalResultCount ? "disabled" : ""}>Next</button>`;
+    const hasMultiplePages = totalResultCount > PAGE_SIZE;
+    footer.innerHTML = `<span class="tcg-range" aria-live="polite">${firstShown}-${lastShown} of ${totalResultCount}</span>${
+      hasMultiplePages
+        ? `<button type="button" class="tcg-button" id="tcg-prev">Previous</button>
+      <button type="button" class="tcg-button" id="tcg-next">Next</button>`
+        : ""
+    }`;
     setControlsDisabled(false);
+    if (!hasMultiplePages) {
+      return;
+    }
     document.getElementById("tcg-prev").disabled = startIndex <= 1;
     document.getElementById("tcg-next").disabled = startIndex + PAGE_SIZE > totalResultCount;
     document.getElementById("tcg-prev").addEventListener("click", () => {
