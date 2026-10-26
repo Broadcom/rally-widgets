@@ -10,6 +10,8 @@ Shows each user's capacity and load for an iteration, with capacity editable in 
 ## Key Features
 - **Inline Capacity Editing**: Change a value and press Enter or leave the field to save. The row refreshes so Task Estimates and Load reflect the change. If the save fails, the previous value is restored and an error is shown.
 - **Load Bar**: Green below 80%, yellow from 80% up to 100%, red at 100% or more. The percentage is shown next to the bar so color is not the only signal.
+- **Sorting**: Click the User or Capacity column header to sort ascending, and click again for descending. Sorting applies to all pages and returns to the first page. The default is User ascending.
+- **Formatted Names**: User display names that contain HTML formatting (colors, styles) are shown formatted, as in the old app. Scripts and event handlers are removed.
 - **Paging**: 25 users per page with Previous and Next buttons and a "26-30 of 30" count.
 - **Refresh**: Reloads the current page to pick up task changes made elsewhere.
 - **Project Scoping**: Respects the page's project scope, including scope down.
@@ -30,8 +32,3 @@ Team Capacity Grid (App SDK version)
 
 ## Settings
 None.
-
-## Reviewer Notes
-- Saving and clearing Capacity were verified against a testn instance: `{"useriterationcapacity": {"Capacity": <value or null>}}` posted with a security token succeeds.
-- Load is a fraction (0.8 = 80%), matching the thresholds in the old app.
-- The iteration is matched by ObjectID from the view filter, falling back to its name if no ObjectID is present.
