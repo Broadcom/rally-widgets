@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Team Capacity Grid</title>
+  <style>
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+
+body {
+    color: #434a54;
+    margin: 0;
+    padding: 8px;
+}
+
+.tcg-header {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.tcg-instructions {
+    color: #58606e;
+    font-size: 12px;
+    margin: 0;
+}
+
+.tcg-button {
+    background-color: #fff;
+    border: 1px solid #1d5bbf;
+    border-radius: 3px;
+    color: #1d5bbf;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    height: 28px;
+    padding: 3px 12px;
+}
+
+.tcg-button:hover:not(:disabled) {
+    background-color: #f0f5fc;
+}
+
+.tcg-button:focus-visible,
+.tcg-capacity-input:focus-visible {
+    outline: 2px solid #3272d9;
+    outline-offset: 1px;
+}
+
+.tcg-button:disabled {
+    border-color: #c4c9d1;
+    color: #6b7280;
+    cursor: default;
+}
+
+.tcg-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.tcg-table th {
+    background: #f5f6f7;
+    border-bottom: 2px solid #c4c9d1;
+    color: #58606e;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.tcg-table td {
+    border-bottom: 1px solid #ebeff5;
+    padding: 6px 12px;
+    vertical-align: middle;
+}
+
+.tcg-table tr:hover td {
+    background: #f9fafb;
+}
+
+.tcg-col-number {
+    width: 15%;
+}
+
+.tcg-col-load {
+    width: 30%;
+}
+
+.tcg-capacity-input {
+    border: 1px solid #c4c9d1;
+    border-radius: 3px;
+    height: 28px;
+    padding: 2px 6px;
+    width: 80px;
+}
+
+.tcg-capacity-input.is-invalid {
+    border-color: #c62828;
+}
+
+.tcg-load {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+}
+
+.tcg-load-track {
+    background: #ebeff5;
+    border-radius: 3px;
+    flex: 1;
+    height: 16px;
+    overflow: hidden;
+}
+
+.tcg-load-fill {
+    height: 100%;
+}
+
+.tcg-load-fill.is-low {
+    background: #b2e3b6;
+}
+
+.tcg-load-fill.is-medium {
+    background: #fbde98;
+}
+
+.tcg-load-fill.is-high {
+    background: #fcb5b1;
+}
+
+.tcg-load-label {
+    min-width: 40px;
+    text-align: right;
+}
+
+.tcg-footer {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.tcg-range {
+    color: #58606e;
+    font-size: 12px;
+}
+
+.tcg-status {
+    color: #c62828;
+    font-size: 12px;
+    min-height: 16px;
+    margin: 4px 0;
+}
+
+.tcg-message {
+    background: #eef4fc;
+    border: 1px solid #bcd4f3;
+    border-radius: 3px;
+    color: #434a54;
+    padding: 12px;
+}
+
+.tcg-message.is-error {
+    background: #fdecea;
+    border-color: #f5b5b0;
+}
+  </style>
+</head>
+
+<body>
+  <div id="wrapper"></div>
+  <script>
+     // $RallyContext:Begin
+     // $RallyContext:End
+  </script>
+  <script>
+(() => {
+  // utilities/utility.js
+  function getSecurityToken() {
+    return window.parent.envConfig.securityToken;
+  }
+
+  function loadWsapiData(type, params, returnRawResults = false) {
+    var url = `${$RallyContext.Url.origin}/slm/webservice/v2.0/${type}`;
+    var paramDelimiter = "?";
+    for (const p in params) {
+      url = `${url}${paramDelimiter}${p}=${params[p]}`;
+      paramDelimiter = "&";
+    }
+    return fetch(url)
+      .then(response => response.json())
+      .then(results => {
+        console.log('results', results);
+        if (returnRawResults) {
+          return Promise.resolve(results);
+        } else if (!results || !results.QueryResult || !results.QueryResult.Results || (results.QueryResult.Errors && results.QueryResult.Errors.length > 0)) {
+          var errorMsg = results;
+          if (results && results.QueryResult && results.QueryResult.Errors) {
+            errorMsg = results.QueryResult.Errors.join(", ");
+          }
+          Promise.reject(`Error loading WSAPI data from ${url}:  ${errorMsg}`)
+        } else {
+          return Promise.resolve(results.QueryResult.Results);
+        }
+      });
+  }
+
+  async function fetchWsapiObject(ref, fetchFields = ['FormattedID', 'Name']) {
+    if (!ref) {
+      throw new Error("A valid _ref is required to fetch a WSAPI object.");
+    }
+    const type = getWsapiTypeFromRef(ref);
+    if (!type) {
+      throw new Error(`Could not determine object type from ref: ${ref}`);
+    }
+    const objectID = getObjectIDFromRef(ref);
+    if (!objectID) {
+      throw new Error(`Could not determine object ID from ref: ${ref}`);
+    }
+    const url = `${$RallyContext.Url.origin}/slm/webservice/v2.0/${type}/${objectID}?fetch=${fetchFields.join(',')}`;
+    const response = await fetch(url);
+    const result = await response.json();
+    const objectKey = Object.keys(result)[0];
+    if (result[objectKey].Errors && result[objectKey].Errors.length > 0) {
+      throw new Error(`Error fetching object: ${result[objectKey].Errors.join(', ')}`);
+    }
+    return result[objectKey];
+  }
+
+  async function updateWsapiObject(ref, fieldsToUpdate, securityToken) {
+    const type = getWsapiTypeFromRef(ref);
+    if (!type) {
+      throw new Error(`Could not determine object type from ref: ${ref}`);
+    }
+    const objectID = getObjectIDFromRef(ref);
+    if (!objectID) {
+      throw new Error(`Could not determine object ID from ref: ${ref}`);
+    }
+    const body = { [type]: fieldsToUpdate };
+    const url = `/slm/webservice/v2.0/${type}/${objectID}?key=${securityToken}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const result = await response.json();
+    if (result.OperationResult.Errors && result.OperationResult.Errors.length > 0) {
+      throw new Error(`Error updating object: ${result.OperationResult.Errors.join(', ')}`);
+    }
+    return result.OperationResult.Object;
+  }
+
+  const getWsapiTypeFromRef = (ref) => {
+    const relativeRef = getRelativeRef(ref);
+    if (!relativeRef) {
+      return null;
+    }
+    const parts = relativeRef.split('/');
+    if (parts.length > 1 && parts[1]) {
+      return parts[1];
+    }
+    return null;
+  };
+
+  function getRelativeRef(ref) {
+    if (!ref || typeof ref !== 'string') {
+      return null;
+    }
+    const apiPrefix = '/slm/webservice/v2.0';
+    let pathname;
+    if (ref.toLowerCase().startsWith('http')) {
+      try {
+        pathname = new URL(ref).pathname;
+      } catch (e) {
+        console.error("Could not parse full _ref URL:", ref, e);
+        return null;
+      }
+    } else {
+      pathname = ref.split('?')[0];
+    }
+    return pathname.startsWith(apiPrefix) ? pathname.substring(apiPrefix.length) : pathname;
+  }
+
+  function getObjectIDFromRef(ref) {
+    if (!ref || typeof ref !== 'string') {
+      return null;
+    }
+    const parts = ref.split('/');
+    const lastPart = parts[parts.length - 1];
+    const objectID = lastPart.split('?')[0];
+    return /^\d+$/.test(objectID) ? objectID : null;
+  }
+
+  // utilities/ui-utilities.js
+  function escapeHtml(text) {
+    if (text == null) return "";
+    const div = document.createElement("div");
+    div.textContent = String(text);
+    return div.innerHTML;
+  }
+
+  // team-capacity-grid/widget.js
+  const PAGE_SIZE = 25;
+  const FETCH_FIELDS = 'User,Capacity,TaskEstimates,Load';
+  const LOW_LOAD_LIMIT = 0.8;
+  const FULL_LOAD_LIMIT = 1;
+
+  let startIndex = 1;
+  let totalResultCount = 0;
+  let records = [];
+  let loadRequestId = 0;
+
+  const main = () => {
+    window.addEventListener("message", (event) => {
+      if (event.origin !== $RallyContext.Url.origin) {
+        return;
+      }
+      if (event.data.type === "RALLY_CONTEXT_LOADED") {
+        startIndex = 1;
+        if ($RallyContext.isEditMode) {
+          renderMessage("Team Capacity Grid has no settings. Exit edit mode to view the grid.");
+        } else {
+          renderGridShell();
+          loadPage();
+        }
+      }
+    });
+  };
+
+  const getIterationObjectID = () => {
+    const viewFilter = $RallyContext.ViewFilter;
+    if (!viewFilter || viewFilter.Type !== "Iteration" || !viewFilter.Value) {
+      return null;
+    }
+    return getObjectIDFromRef(viewFilter.Value._ref);
+  };
+
+  const renderMessage = (message, isError = false) => {
+    document.getElementById("wrapper").innerHTML =
+      `<div class="tcg-message${isError ? " is-error" : ""}" role="${isError ? "alert" : "status"}">${escapeHtml(message)}</div>`;
+  };
+
+  const renderGridShell = () => {
+    document.getElementById("wrapper").innerHTML = `
+      <div class="tcg-header">
+        <p class="tcg-instructions">Create and assign a task with an estimate, or go to Track &gt; Team Status to enter capacities.</p>
+        <button type="button" class="tcg-button" id="tcg-refresh">Refresh</button>
+      </div>
+      <div class="tcg-status" id="tcg-status" role="alert"></div>
+      <div id="tcg-grid" aria-busy="true"></div>
+      <div class="tcg-footer" id="tcg-footer"></div>`;
+    document.getElementById("tcg-refresh").addEventListener("click", () => loadPage());
+  };
+
+  const setStatus = (message) => {
+    const status = document.getElementById("tcg-status");
+    if (status) {
+      status.textContent = message || "";
+    }
+  };
+
+  const loadPage = async () => {
+    const iterationObjectID = getIterationObjectID();
+    if (!iterationObjectID) {
+      renderMessage("You must specify a valid Iteration/Sprint. Unscheduled is not supported.");
+      return;
+    }
+    const requestId = ++loadRequestId;
+    const grid = document.getElementById("tcg-grid");
+    grid.setAttribute("aria-busy", "true");
+    setStatus("");
+    const params = {
+      workspace: $RallyContext.GlobalScope.Workspace._ref,
+      project: $RallyContext.GlobalScope.Project._ref,
+      projectScopeUp: $RallyContext.GlobalScope.ProjectScopeUp,
+      projectScopeDown: $RallyContext.GlobalScope.ProjectScopeDown,
+      fetch: FETCH_FIELDS,
+      query: encodeURIComponent(`(Iteration.ObjectID = ${iterationObjectID})`),
+      order: "User",
+      pagesize: PAGE_SIZE,
+      start: startIndex
+    };
+    try {
+      const results = await loadWsapiData("useriterationcapacity", params, true);
+      if (requestId !== loadRequestId) {
+        return;
+      }
+      const queryResult = results && results.QueryResult;
+      if (!queryResult || (queryResult.Errors && queryResult.Errors.length > 0)) {
+        throw new Error(queryResult ? queryResult.Errors.join(", ") : "No response from Rally");
+      }
+      records = queryResult.Results;
+      totalResultCount = queryResult.TotalResultCount;
+      renderGrid();
+    } catch (error) {
+      if (requestId !== loadRequestId) {
+        return;
+      }
+      console.error("Failed to load team capacity:", error);
+      renderMessage("Unable to load team capacity. Please try refreshing.", true);
+    }
+  };
+
+  const getLoadClass = (load) => {
+    if (load < LOW_LOAD_LIMIT) return "is-low";
+    if (load < FULL_LOAD_LIMIT) return "is-medium";
+    return "is-high";
+  };
+
+  const loadTemplate = (record) => {
+    if (record.Load == null) {
+      return '<span aria-label="No load">&mdash;</span>';
+    }
+    const percent = Math.round(record.Load * 100);
+    const barWidth = Math.min(percent, 100);
+    return `<div class="tcg-load">
+      <div class="tcg-load-track" role="progressbar" aria-label="Load" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(percent, 100)}" aria-valuetext="${percent}%">
+        <div class="tcg-load-fill ${getLoadClass(record.Load)}" style="width: ${barWidth}%"></div>
+      </div>
+      <span class="tcg-load-label">${percent}%</span>
+    </div>`;
+  };
+
+  const rowTemplate = (record, index) => {
+    const userName = record.User ? record.User._refObjectName : "";
+    const capacity = record.Capacity == null ? "" : record.Capacity;
+    return `<tr data-index="${index}">
+      <td>${escapeHtml(userName)}</td>
+      <td><input type="number" min="0" step="any" class="tcg-capacity-input" value="${escapeHtml(capacity)}" aria-label="Capacity for ${escapeHtml(userName)}"></td>
+      <td class="tcg-task-estimates">${escapeHtml(record.TaskEstimates)}</td>
+      <td class="tcg-load-cell">${loadTemplate(record)}</td>
+    </tr>`;
+  };
+
+  const renderGrid = () => {
+    const grid = document.getElementById("tcg-grid");
+    if (records.length === 0) {
+      grid.innerHTML = '<div class="tcg-message" role="status">There are no capacity records for this iteration.</div>';
+    } else {
+      grid.innerHTML = `<table class="tcg-table" aria-label="Team capacity">
+        <thead>
+          <tr>
+            <th scope="col">User</th>
+            <th scope="col" class="tcg-col-number">Capacity</th>
+            <th scope="col" class="tcg-col-number">Task Estimates</th>
+            <th scope="col" class="tcg-col-load">Load</th>
+          </tr>
+        </thead>
+        <tbody>${records.map(rowTemplate).join("")}</tbody>
+      </table>`;
+      grid.querySelectorAll(".tcg-capacity-input").forEach((input) => {
+        input.addEventListener("change", onCapacityChange);
+      });
+    }
+    grid.setAttribute("aria-busy", "false");
+    renderFooter();
+  };
+
+  const renderFooter = () => {
+    const footer = document.getElementById("tcg-footer");
+    const firstShown = records.length === 0 ? 0 : startIndex;
+    const lastShown = startIndex + records.length - 1;
+    footer.innerHTML = `<span class="tcg-range" aria-live="polite">${firstShown}-${Math.max(lastShown, 0)} of ${totalResultCount}</span>
+      <button type="button" class="tcg-button" id="tcg-prev" ${startIndex <= 1 ? "disabled" : ""}>Previous</button>
+      <button type="button" class="tcg-button" id="tcg-next" ${startIndex + PAGE_SIZE > totalResultCount ? "disabled" : ""}>Next</button>`;
+    document.getElementById("tcg-prev").addEventListener("click", () => {
+      startIndex = Math.max(1, startIndex - PAGE_SIZE);
+      loadPage();
+    });
+    document.getElementById("tcg-next").addEventListener("click", () => {
+      startIndex += PAGE_SIZE;
+      loadPage();
+    });
+  };
+
+  const onCapacityChange = async (event) => {
+    const input = event.target;
+    const row = input.closest("tr");
+    const record = records[Number(row.dataset.index)];
+    const previousCapacity = record.Capacity == null ? "" : String(record.Capacity);
+    const rawValue = input.value.trim();
+    const newCapacity = rawValue === "" ? null : Number(rawValue);
+
+    if (newCapacity !== null && (!Number.isFinite(newCapacity) || newCapacity < 0)) {
+      input.classList.add("is-invalid");
+      input.value = previousCapacity;
+      setStatus("Capacity must be a number that is 0 or greater.");
+      return;
+    }
+    input.classList.remove("is-invalid");
+    setStatus("");
+    input.disabled = true;
+    try {
+      await updateWsapiObject(record._ref, { Capacity: newCapacity }, getSecurityToken());
+      const updated = await fetchWsapiObject(record._ref, FETCH_FIELDS.split(","));
+      records[Number(row.dataset.index)] = { ...record, ...updated, User: record.User };
+      row.querySelector(".tcg-task-estimates").textContent = updated.TaskEstimates;
+      row.querySelector(".tcg-load-cell").innerHTML = loadTemplate(updated);
+      input.value = updated.Capacity == null ? "" : updated.Capacity;
+    } catch (error) {
+      console.error("Failed to save capacity:", error);
+      input.value = previousCapacity;
+      setStatus("Unable to save capacity. The previous value was restored.");
+    } finally {
+      input.disabled = false;
+    }
+  };
+
+  main();
+})();
+  </script>
+</body>
+
+</html>
