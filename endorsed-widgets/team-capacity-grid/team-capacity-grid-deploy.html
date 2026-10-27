@@ -1,7 +1,7 @@
 <!--
   Build Version: N/A
-  Build Date: 2026-10-26T19:11:39.078Z
-  Checksum (md5): bd356529cb7fa036b8824c802e928ba0
+  Build Date: 2026-10-27T15:22:58.667Z
+  Checksum (md5): 8dd5f8c80602747966256cc0d03e5a84
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -1630,17 +1630,19 @@ th[aria-sort="descending"] .tcg-sort::after {
     if (load < FULL_LOAD_LIMIT) return "is-medium";
     return "is-high";
   };
+  var formatPercent = (fraction) => fraction.toLocaleString(void 0, { style: "percent", maximumFractionDigits: 0 });
+  var formatEstimates = (estimates) => estimates == null ? "" : estimates.toLocaleString();
   var loadTemplate = (record) => {
     if (record.Load == null) {
       return '<span aria-hidden="true">&mdash;</span><span class="tcg-visually-hidden">No load</span>';
     }
-    const percent = Math.round(record.Load * 100);
-    const barWidth = Math.min(percent, 100);
+    const percentText = formatPercent(record.Load);
+    const barWidth = Math.min(Math.round(record.Load * 100), 100);
     return `<div class="tcg-load">
-    <div class="tcg-load-track" role="progressbar" aria-label="Load" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${barWidth}" aria-valuetext="${percent}%">
+    <div class="tcg-load-track" role="progressbar" aria-label="Load" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${barWidth}" aria-valuetext="${percentText}">
       <div class="tcg-load-fill ${getLoadClass(record.Load)}" style="width: ${barWidth}%"></div>
     </div>
-    <span class="tcg-load-label">${percent}%</span>
+    <span class="tcg-load-label">${percentText}</span>
   </div>`;
   };
   var createRow = (record, index) => {
@@ -1662,7 +1664,7 @@ th[aria-sort="descending"] .tcg-sort::after {
     capacityCell.appendChild(input);
     const estimatesCell = document.createElement("td");
     estimatesCell.className = "tcg-task-estimates";
-    estimatesCell.textContent = record.TaskEstimates == null ? "" : record.TaskEstimates;
+    estimatesCell.textContent = formatEstimates(record.TaskEstimates);
     const loadCell = document.createElement("td");
     loadCell.className = "tcg-load-cell";
     loadCell.innerHTML = loadTemplate(record);
@@ -1698,7 +1700,7 @@ th[aria-sort="descending"] .tcg-sort::after {
     const firstShown = records.length === 0 ? 0 : startIndex;
     const lastShown = records.length === 0 ? 0 : startIndex + records.length - 1;
     const hasMultiplePages = totalResultCount > PAGE_SIZE;
-    footer.innerHTML = `<span class="tcg-range" aria-live="polite">${firstShown}-${lastShown} of ${totalResultCount}</span>${hasMultiplePages ? `<button type="button" class="tcg-button" id="tcg-prev">Previous</button>
+    footer.innerHTML = `<span class="tcg-range" aria-live="polite">${firstShown.toLocaleString()}-${lastShown.toLocaleString()} of ${totalResultCount.toLocaleString()}</span>${hasMultiplePages ? `<button type="button" class="tcg-button" id="tcg-prev">Previous</button>
     <button type="button" class="tcg-button" id="tcg-next">Next</button>` : ""}`;
     setControlsDisabled(false);
     if (!hasMultiplePages) {
@@ -1749,7 +1751,7 @@ th[aria-sort="descending"] .tcg-sort::after {
         return;
       }
       records[Number(row.dataset.index)] = { ...record, ...updated, User: record.User };
-      row.querySelector(".tcg-task-estimates").textContent = updated.TaskEstimates;
+      row.querySelector(".tcg-task-estimates").textContent = formatEstimates(updated.TaskEstimates);
       row.querySelector(".tcg-load-cell").innerHTML = loadTemplate(updated);
       input.value = updated.Capacity == null ? "" : updated.Capacity;
     } catch (error) {
